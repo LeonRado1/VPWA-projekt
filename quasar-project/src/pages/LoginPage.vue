@@ -2,7 +2,8 @@
   <q-form @submit.prevent="login" class="q-gutter-sm q-my-lg q-pt-md text-center">
     <q-input
       v-model="email"
-      outlined
+      filled
+      dense
       label="Email"
       type="email"
       lazy-rules
@@ -10,15 +11,24 @@
         (val) => (val && val.length > 0) || 'This field is required',
         (val) => /^\S+@\S+\.\S+$/.test(val) || 'Invalid email format',
       ]"
-    />
+    >
+      <template v-slot:prepend>
+        <q-icon size="xs" name="email" />
+      </template>
+    </q-input>
     <q-input
       v-model="password"
-      outlined
+      filled
+      dense
       label="Password"
       type="password"
       lazy-rules
       :rules="[(val) => (val && val.length > 0) || 'This field is required']"
-    />
+    >
+      <template v-slot:prepend>
+        <q-icon size="xs" name="key" />
+      </template>
+    </q-input>
     <q-btn
       class="q-mt-md"
       type="submit"
