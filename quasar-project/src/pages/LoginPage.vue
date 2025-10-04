@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { Notify } from 'quasar';
+import { notify } from 'src/misc/helpers';
 
 export default {
   data() {
@@ -55,20 +55,7 @@ export default {
       if (this.email.length > 10) {
         this.$router.push('/');
       } else {
-        Notify.create({
-          message: 'Invalid login credentials',
-          color: 'negative',
-          icon: 'error',
-          position: 'bottom-right',
-          actions: [
-            {
-              color: 'white',
-              rounded: true,
-              icon: 'close',
-              handler: () => {},
-            },
-          ],
-        });
+        notify('Invalid login credentials', true);
       }
     },
     isFormValid(): boolean {
