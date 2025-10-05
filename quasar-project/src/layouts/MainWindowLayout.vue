@@ -1,33 +1,33 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view=" Lpr lHh lFf" class="full-width">
+    <q-header elevated style="background-color: gray;">
       <q-toolbar>
-        <q-avatar :size="avatarSize">
-          <img :src="profilePicture" alt="Profile">
-        </q-avatar>
-        <q-toolbar-title>{{ headerTitle }}</q-toolbar-title>
+      <q-avatar :size="avatarSize">
+        <img :src="profilePicture" alt="Profile">
+      </q-avatar>
+      <q-toolbar-title>{{ headerTitle }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
 
     <q-drawer show-if-above bordered>
-      <div>
-        <div>
+      <div style="max-height: 33.33%; overflow-y: auto;">
+        <div style="position: sticky; top: 0; z-index: 10; background-color: lightgray;">
           <q-item-label header>Channels</q-item-label>
         </div>
-        <div>
+        <div class="q-pa-md" >
           <q-list>
-            <q-item v-for="channel in exampleChannels" :key="channel" clickable>
-              <TeamComponent :text="channel" />
-            </q-item>
+        <q-item v-for="channel in exampleChannels" :key="channel" clickable>
+          <TeamComponent :text="channel" />
+        </q-item>
           </q-list>
         </div>
       </div>
 
-      <div>
-        <div>
+      <div  style="max-height: 33.33%; overflow-y: auto;">
+        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10;">
           <q-item-label header>Direct Messages</q-item-label>
         </div>
-        <div>
+        <div  class="q-pa-md">
           <q-list>
             <q-item v-for="user in exampleDirectMessages" :key="user" clickable>
               <TeamComponent :text="user" />
@@ -36,19 +36,19 @@
         </div>
       </div>
 
-      <div>
-        <div>
-          <q-item-label header>Command Line</q-item-label>
+      <div  style="max-height: 33.33%; overflow-y: auto;"> 
+        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10;"> 
+          <q-item-label header >Command Line</q-item-label>
         </div>
         <div>
-          <div>
+          <div class="q-pa-md">
             <div v-for="command in commandHistory" :key="command.id">
-              <div>{{ command.prompt }}</div>
-              <div v-if="command.output">{{ command.output }}</div>
+              <div style="color: green; font-weight: 700;">{{ command.prompt }}</div>
+              <div v-if="command.output" style="color: gray;">{{ command.output }}</div>
             </div>
           </div>
         </div>
-        <div>
+        <div class="q-pa-md" style="position: sticky; bottom: 0; background: white; z-index: 10;">
           <q-input
             v-model="drawerInputText"
             placeholder="Enter command..."
@@ -105,6 +105,10 @@ export default defineComponent({
       ],
       commandHistory: [
         { id: 1, prompt: '> help', output: 'Available commands: help, clear, status' },
+        { id: 2, prompt: '> status', output: 'System online' },
+        { id: 2, prompt: '> status', output: 'System online' },
+        { id: 2, prompt: '> status', output: 'System online' },
+        { id: 2, prompt: '> status', output: 'System online' },
         { id: 2, prompt: '> status', output: 'System online' }
       ] as CommandEntry[]
     };

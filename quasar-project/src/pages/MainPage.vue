@@ -40,7 +40,7 @@
             :class="message.isOwn
               ? 'bg-primary text-white'
               : 'bg-grey-3 text-dark'"
-            style="max-width: 70%;"
+            style="max-width: 70%; border-radius: 8px;"
           >
             <div class="text-body2">{{ message.text }}</div>
             <div class="text-caption text-right text-grey-7 q-mt-xs">
