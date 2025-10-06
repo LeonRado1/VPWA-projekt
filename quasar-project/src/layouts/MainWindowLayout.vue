@@ -4,8 +4,8 @@
 
     <q-drawer show-if-above bordered>
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10; background-color: lightgray">
-          <q-item-label header>Channels</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10;" class="bg-secondary">
+          <q-item-label header class="text-white">Channels</q-item-label>
         </div>
         <div class="q-pa-md">
           <q-list>
@@ -17,8 +17,8 @@
       </div>
 
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10">
-          <q-item-label header>Direct Messages</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
+          <q-item-label header class="text-white">Direct Messages</q-item-label>
         </div>
         <div class="q-pa-md">
           <q-list>
@@ -30,8 +30,8 @@
       </div>
 
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10">
-          <q-item-label header>Command Line</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
+          <q-item-label header class="text-white">Command Line</q-item-label>
         </div>
         <div>
           <div class="q-pa-md">

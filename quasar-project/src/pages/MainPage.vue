@@ -1,13 +1,13 @@
   <template>
   <q-page class="column bg-grey-2" >
 
-  <div class="row items-center justify-between flex-none bg-grey-1 q-pa-sm q-mb-sm rounded-lg shadow-1" style="position: sticky; top: 50px; z-index: 30;">
-      <div class="row items-center">
+    <div class="row items-center justify-between flex-none bg-secondary q-pa-sm q-mb-sm rounded-lg shadow-1" style="position: sticky; top: 50px; z-index: 30;">
+      <div class="row items-center" style=" ">
         <q-avatar size="40px" class="q-mr-sm rounded-full">
           <img :src="profilePicture" alt="User" />
         </q-avatar>
         <div class="column">
-          <div class="text-subtitle1 text-weight-medium text-dark">
+          <div class="text-subtitle1 text-weight-medium text-white">
             {{ currentChatName }}
           </div>
         </div>
@@ -17,39 +17,29 @@
       </div>
     </div>
 
-    <div
-      class="col scroll q-pa-md bg-white rounded-lg "
-      style="flex: 1 1 auto;"
-      ref="messagesContainer"
-    >
+   
       <div class="column q-gutter-sm">
         <div
-          v-for="message in messages"
-          :key="message.id"
-          class="row no-wrap"
-          :class="message.isOwn ? 'justify-end' : 'justify-start'"
+          v-for="msg in messages"
+          :key="msg.id"
+          :class="[
+            'row items-end',
+            msg.isOwn ? 'justify-end' : 'justify-start'
+          ]"
+          
         >
-          <div v-if="!message.isOwn" class="q-mr-sm self-end">
-            <q-avatar size="28px" class="rounded-full">
-              <img :src="profilePicture" alt="User" />
-            </q-avatar>
-          </div>
-
-          <div
-            class="column q-pa-sm q-px-md q-mb-xs rounded-lg"
-            :class="message.isOwn
-              ? 'bg-primary text-white'
-              : 'bg-grey-3 text-dark'"
-            style="max-width: 70%; border-radius: 8px;"
-          >
-            <div class="text-body2">{{ message.text }}</div>
-            <div class="text-caption text-right text-grey-7 q-mt-xs">
-              {{ formatTime(message.timestamp) }}
-            </div>
-          </div>
+          <q-chat-message
+            :text="[msg.text]"
+            :sent="msg.isOwn"
+            :stamp="formatTime(msg.timestamp)"
+            :avatar="!msg.isOwn ? profilePicture : undefined"
+            :bg-color="msg.isOwn ? 'secondary' : 'grey-4'"
+            :text-color="msg.isOwn ? 'white' : 'dark'"
+            class="q-mb-xs"
+            style="margin: 10px;"
+          />
         </div>
       </div>
-    </div>
 
   <div class="row items-center q-pa-sm bg-grey-1 flex-none rounded-lg shadow-1" style="position: sticky; bottom: 0px;">
       <q-input
