@@ -92,6 +92,7 @@
 
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
+import { useUserStore } from 'src/stores/user';
 
 export default {
   data() {
@@ -102,6 +103,7 @@ export default {
       password: '',
       confirmPassword: '',
       termsAccepted: false,
+      userStore: useUserStore(),
     };
   },
   methods: {
@@ -115,7 +117,10 @@ export default {
         this.termsAccepted,
       );
       if (this.email.length > 10) {
-        this.$router.push('/');
+        this.userStore.setUser({
+          email: this.email,
+        });
+        this.$router.push('/')
       } else {
         notify('Nickname is already in use', true);
       }
@@ -133,7 +138,7 @@ export default {
         this.termsAccepted,
       ].every((val) => val);
 
-      const doPasswordsMatch = this.password === this.confirmPassword;
+      const doPasswordsMatch = this.password === this.confirmPassword && this.password.length > 8;
       const isFormatCorrect = emailPattern.test(this.email) && fullNamePattern.test(this.fullName);
 
       return isFilled && doPasswordsMatch && isFormatCorrect;

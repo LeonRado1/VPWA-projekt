@@ -41,19 +41,24 @@
 
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
+import { useUserStore } from 'src/stores/user';
 
 export default {
   data() {
     return {
       email: '',
       password: '',
+      userStore: useUserStore(),
     };
   },
   methods: {
     login() {
       console.log(this.email, this.password);
       if (this.email.length > 10) {
-        this.$router.push('/');
+        this.userStore.setUser({
+          email: this.email,
+        });
+        this.$router.push('/')
       } else {
         notify('Invalid login credentials', true);
       }
