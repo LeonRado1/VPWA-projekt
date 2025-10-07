@@ -50,3 +50,36 @@
 	--scrollbar-width-slim: 3px;
 }
 
+/* Make Quasar q-list / q-item denser (smaller/tighter list rows) */
+/* Applies when using the `dense` prop or the `.q-item--dense` class */
+
+.q-list.dense .q-item,
+.q-item--dense,
+.q-item.dense {
+	--q-item-padding: 4px 6px; 
+	padding: 0px 6px !important;
+	min-height: 8px !important;
+    height: 2.2rem !important;
+}
+
+
+.q-item__label {
+	line-height: 1.0;
+}
+
+.q-item__label--header{
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 10px 10px;
+}
+
+.q-separator,
+.q-item__separator {
+	margin: 2px 0;
+}
+
+.q-item__section--side {
+	min-width: 30px !important;
+	padding-right: 6px !important;
+}
+

@@ -88,7 +88,7 @@ export default defineConfig((/* ctx */) => {
      config: {
   brand: {
     primary: '#00AEEF',   // hlavná akčná farba – svetlomodrá
-    secondary: '#0197ceff', // sekundárna – zelená (success, potvrdenia)
+    secondary: '#4eb0bdff', // sekundárna – zelená (success, potvrdenia)
     accent: '#FF9800',    // zvýraznenia a CTA (oranžová)
     dark: '#121212',      // základ tmavého režimu / hlboké pozadie
     positive: '#2ECC71',  // success (rovnaká ako secondary pre konzistenciu)
