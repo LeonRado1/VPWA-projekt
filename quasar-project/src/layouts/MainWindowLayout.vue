@@ -4,39 +4,39 @@
 
     <q-drawer show-if-above bordered>
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10; background-color: lightgray">
-          <q-item-label header>Channels</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10;" class="bg-secondary">
+          <q-item-label header class="text-white">Channels</q-item-label>
         </div>
         <div class="q-pa-md">
-          <q-list>
-            <q-item v-for="channel in exampleChannels" :key="channel" clickable>
+            <q-list dense>
+            <q-item v-for="channel in exampleChannels" :key="channel" clickable dense @click="openChannel(channel)">
               <TeamComponent :text="channel" />
             </q-item>
-          </q-list>
+            </q-list>
         </div>
       </div>
 
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10">
-          <q-item-label header>Direct Messages</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
+          <q-item-label header class="text-white">Direct Messages</q-item-label>
         </div>
         <div class="q-pa-md">
           <q-list>
-            <q-item v-for="user in exampleDirectMessages" :key="user" clickable>
-              <TeamComponent :text="user" />
+            <q-item v-for="user in exampleDirectMessages" :key="user" clickable dense @click="openUser(user)">
+              <TeamComponent :text="user" /> 
             </q-item>
           </q-list>
         </div>
       </div>
 
       <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; background-color: lightgray; z-index: 10">
-          <q-item-label header>Command Line</q-item-label>
+        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
+          <q-item-label header class="text-white">Command Line</q-item-label>
         </div>
         <div>
           <div class="q-pa-md">
             <div v-for="command in commandHistory" :key="command.id">
-              <div style="color: green; font-weight: 700">{{ command.prompt }}</div>
+              <div style="color: green; font-weight: 800">{{ command.prompt }}</div>
               <div v-if="command.output" style="color: gray">{{ command.output }}</div>
             </div>
           </div>
@@ -147,6 +147,25 @@ export default defineComponent({
         this.drawerInputText = '';
       }
     },
+    async openChannel(channel: string) {
+      const encoded = encodeURIComponent(channel);
+      try {
+        await this.$router.push({ path: `/channels/${encoded}` });
+      } catch (err) {
+        
+        console.error('Navigation error (openChannel):', err);
+      }
+    },
+    async openUser(user: string) {
+      const encoded = encodeURIComponent(user);
+      try {
+        await this.$router.push({ path: `/users/${encoded}` });
+      } catch (err) {
+        
+        console.error('Navigation error (openUser):', err);
+      }
+    },
   },
+  
 });
 </script>

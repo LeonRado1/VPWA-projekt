@@ -85,7 +85,24 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: {},
+     config: {
+  brand: {
+    primary: '#00AEEF',   // hlavná akčná farba – svetlomodrá
+    secondary: '#4eb0bdff', // sekundárna – zelená (success, potvrdenia)
+    accent: '#FF9800',    // zvýraznenia a CTA (oranžová)
+    dark: '#121212',      // základ tmavého režimu / hlboké pozadie
+    positive: '#2ECC71',  // success (rovnaká ako secondary pre konzistenciu)
+    negative: '#E53935',  // error – sýta červená
+    info: '#29B6F6',      // informačné prvky – tyrkysovo-modrá
+    warning: '#FDD835',   // výstrahy – žltá
+    light: '#FAFAFA',     // svetlé pozadie
+    surface: '#FFFFFF',   // biele karty / panely
+    border: '#E0E0E0',    // jemné linky a oddelenia
+    textPrimary: '#212121',  // primárny text
+    textSecondary: '#757575' // sekundárny text
+  }
+}
+,
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
