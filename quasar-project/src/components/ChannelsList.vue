@@ -84,7 +84,7 @@ export default defineComponent({
           id: '7',
           name: 'Marketing',
           lastMessage: 'Draft for the campaign ready for review.',
-          lastActivity: new Date('2025-10-18T15:00:00'),
+          lastActivity: new Date(),
           isPublic: true,
           isInvite: false,
         },

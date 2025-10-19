@@ -29,11 +29,11 @@ export function calculateTimeAgo(date: Date) {
     return 'now';
   }
   if (minutes < 60) {
-    return `${minutes} min ago`;
+    return `${minutes} m`;
   }
   if (hours < 24) {
-    return `${hours} hrs ago`;
+    return `${hours} h`;
   }
 
-  return `${days} d ago`;
+  return `${days} d`;
 }

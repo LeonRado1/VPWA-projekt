@@ -14,10 +14,11 @@
         {{ userStore.user?.email[0] }}
       </q-avatar>
       <span class="q-ml-sm text-weight-medium">{{ userStore.user?.email }}</span>
-      <q-btn icon="logout" class="q-mx-md" @click="logout" outline label="Logout" />
+      <q-btn icon="logout" size="12px" class="q-mx-md" @click="logout" outline label="Logout" />
       <q-btn
         flat
         round
+        size="12px"
         :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
         @click="toggleDarkMode"
       />

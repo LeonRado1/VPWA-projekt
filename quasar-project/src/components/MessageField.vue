@@ -10,7 +10,7 @@
       autogrow
       :max-height="100"
     />
-    <q-btn icon="send" flat round dense color="primary" class="q-ml-sm rounded-full" />
+    <q-btn icon="send" size="12px" flat round color="primary" class="q-ml-sm" />
   </div>
 </template>
 
