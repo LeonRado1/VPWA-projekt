@@ -93,8 +93,9 @@
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
 import { useUserStore } from 'src/stores/user';
+import { defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
   data() {
     return {
       email: '',
@@ -107,7 +108,7 @@ export default {
     };
   },
   methods: {
-    signup() {
+    async signup() {
       console.log(
         this.email,
         this.fullName,
@@ -120,7 +121,7 @@ export default {
         this.userStore.setUser({
           email: this.email,
         });
-        this.$router.push('/')
+        await this.$router.push('/');
       } else {
         notify('Nickname is already in use', true);
       }
@@ -144,5 +145,5 @@ export default {
       return isFilled && doPasswordsMatch && isFormatCorrect;
     },
   },
-};
+});
 </script>

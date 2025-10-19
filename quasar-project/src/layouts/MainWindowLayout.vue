@@ -1,26 +1,24 @@
 <template>
   <q-layout view="hHh Lpr lff" class="full-width">
     <AppNavbar v-model:sidebarOpen="sidebarOpen" />
-    <q-drawer show-if-above bordered v-model="sidebarOpen">
-      <div>
-        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
-          <q-item-label header class="text-white">Channels</q-item-label>
+
+    <q-drawer show-if-above v-model="sidebarOpen" bordered>
+      <div class="q-px-sm q-py-md full-height flex column no-wrap">
+        <div class="text-h6 text-secondary text-weight-bold q-mb-md" style="line-height: 1">
+          Channels
         </div>
-        <div class="q-pa-md">
-          <q-list dense>
-            <q-item
-              v-for="channel in exampleChannels"
-              :key="channel"
-              clickable
-              dense
-              @click="openChannel(channel)"
-            >
-              <TeamComponent :text="channel" />
-            </q-item>
-          </q-list>
+        <q-separator />
+        <div class="q-my-md" style="flex: 1; overflow-y: auto">
+          <ChannelsList />
+        </div>
+        <q-separator />
+        <div class="row gap-2 q-mt-md">
+          <q-btn outline size="sm" round class="q-mr-sm" icon="motion_photos_on" />
+          <q-btn outline size="sm" round icon="library_add" />
         </div>
       </div>
     </q-drawer>
+
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -31,8 +29,8 @@
 import { defineComponent } from 'vue';
 import { useQuasar } from 'quasar';
 import profilePicture from '../assets/profile-picture.png';
-import TeamComponent from 'src/components/TeamComponent.vue';
 import AppNavbar from 'components/AppNavbar.vue';
+import ChannelsList from 'components/ChannelsList.vue';
 
 interface CommandEntry {
   id: number;
@@ -43,8 +41,8 @@ interface CommandEntry {
 export default defineComponent({
   name: 'MainWindowLayout',
   components: {
+    ChannelsList,
     AppNavbar,
-    TeamComponent,
   },
   data() {
     return {

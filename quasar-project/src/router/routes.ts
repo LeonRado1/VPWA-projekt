@@ -33,26 +33,15 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-  path: '/channels',
-  component: () => import('layouts/MainWindowLayout.vue'),
-  children: [
-    {
-      path: ':id',
-      component: () => import('pages/ChannelMessages.vue')
-    }
-  ]
-},
-{
-  path: '/users',
-  component: () => import('layouts/MainWindowLayout.vue'),
-  children: [
-    {
-      path: ':id',
-      component: () => import('pages/UserMessages.vue')
-    }
-  ]
-},
-
+    path: '/channels',
+    component: () => import('layouts/MainWindowLayout.vue'),
+    children: [
+      {
+        path: ':id',
+        component: () => import('pages/ChannelMessages.vue'),
+      },
+    ],
+  },
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),

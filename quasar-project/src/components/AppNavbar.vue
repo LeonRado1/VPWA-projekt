@@ -1,5 +1,5 @@
 <template>
-  <q-header elevated>
+  <q-header>
     <q-toolbar>
       <q-btn flat round dense icon="menu" class="q-mr-sm" @click="toggleSidebar()" />
       <img
@@ -10,19 +10,31 @@
         :style="{ cursor: 'pointer' }"
       />
       <q-space></q-space>
-      <span class="q-mr-md">{{ userStore.user?.email }}</span>
-      <q-btn @click="logout" outline label="Logout" />
+      <q-avatar color="accent" size="md" text-color="white">
+        {{ userStore.user?.email[0] }}
+      </q-avatar>
+      <span class="q-ml-sm text-weight-medium">{{ userStore.user?.email }}</span>
+      <q-btn icon="logout" class="q-mx-md" @click="logout" outline label="Logout" />
+      <q-btn
+        flat
+        round
+        :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
+        @click="toggleDarkMode"
+      />
     </q-toolbar>
   </q-header>
 </template>
 
 <script lang="ts">
 import { useUserStore } from 'stores/user';
+import { useQuasar } from 'quasar';
+import { defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
   data() {
     return {
       userStore: useUserStore(),
+      $q: useQuasar(),
     };
   },
   props: {
@@ -33,16 +45,19 @@ export default {
   },
   emits: ['update:sidebarOpen'],
   methods: {
-    logout() {
+    async logout() {
       this.userStore.setUser(null);
-      this.$router.push('/auth');
+      await this.$router.push('/auth');
     },
-    homePage() {
-      this.$router.push('/');
+    async homePage() {
+      await this.$router.push('/');
     },
     toggleSidebar() {
       this.$emit('update:sidebarOpen', !this.sidebarOpen);
     },
+    toggleDarkMode() {
+      this.$q.dark.toggle();
+    },
   },
-};
+});
 </script>
