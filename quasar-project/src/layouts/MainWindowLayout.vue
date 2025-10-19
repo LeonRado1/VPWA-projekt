@@ -1,65 +1,23 @@
 <template>
-  <q-layout view=" Lpr lHh lFf" class="full-width">
-    <AppNavbar />
-
-    <q-drawer show-if-above bordered>
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10;" class="bg-secondary">
+  <q-layout view="hHh Lpr lff" class="full-width">
+    <AppNavbar v-model:sidebarOpen="sidebarOpen" />
+    <q-drawer show-if-above bordered v-model="sidebarOpen">
+      <div>
+        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
           <q-item-label header class="text-white">Channels</q-item-label>
         </div>
         <div class="q-pa-md">
-            <q-list dense>
-            <q-item v-for="channel in exampleChannels" :key="channel" clickable dense @click="openChannel(channel)">
+          <q-list dense>
+            <q-item
+              v-for="channel in exampleChannels"
+              :key="channel"
+              clickable
+              dense
+              @click="openChannel(channel)"
+            >
               <TeamComponent :text="channel" />
             </q-item>
-            </q-list>
-        </div>
-      </div>
-
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
-          <q-item-label header class="text-white">Direct Messages</q-item-label>
-        </div>
-        <div class="q-pa-md">
-          <q-list>
-            <q-item v-for="user in exampleDirectMessages" :key="user" clickable dense @click="openUser(user)">
-              <TeamComponent :text="user" /> 
-            </q-item>
           </q-list>
-        </div>
-      </div>
-
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
-          <q-item-label header class="text-white">Command Line</q-item-label>
-        </div>
-        <div>
-          <div class="q-pa-md">
-            <div v-for="command in commandHistory" :key="command.id">
-              <div style="color: green; font-weight: 800">{{ command.prompt }}</div>
-              <div v-if="command.output" style="color: gray">{{ command.output }}</div>
-            </div>
-          </div>
-        </div>
-        <div class="q-pa-md" style="position: sticky; bottom: 0; background: white; z-index: 10">
-          <q-input
-            v-model="drawerInputText"
-            placeholder="Enter command..."
-            outlined
-            dense
-            @keyup.enter="handleDrawerInput"
-          >
-            <template v-slot:append>
-              <q-btn
-                icon="send"
-                flat
-                round
-                dense
-                @click="handleDrawerInput"
-                :disable="!drawerInputText.trim()"
-              />
-            </template>
-          </q-input>
         </div>
       </div>
     </q-drawer>
@@ -90,6 +48,7 @@ export default defineComponent({
   },
   data() {
     return {
+      sidebarOpen: true,
       headerTitle: 'Name',
       drawerInputText: '',
       exampleChannels: [
@@ -152,7 +111,6 @@ export default defineComponent({
       try {
         await this.$router.push({ path: `/channels/${encoded}` });
       } catch (err) {
-        
         console.error('Navigation error (openChannel):', err);
       }
     },
@@ -161,11 +119,9 @@ export default defineComponent({
       try {
         await this.$router.push({ path: `/users/${encoded}` });
       } catch (err) {
-        
         console.error('Navigation error (openUser):', err);
       }
     },
   },
-  
 });
 </script>
