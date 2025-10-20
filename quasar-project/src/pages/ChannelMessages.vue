@@ -1,31 +1,41 @@
 <template>
-  <q-page class="flex column full-height">
-    <div class="row no-wrap items-center bg-secondary q-pa-sm">
-      <div class="col no-wrap text-subtitle text-weight-medium text-white">
+  <q-page class="flex column full-height no-wrap">
+    <div class="row items-center bg-secondary q-pa-sm">
+      <div class="col text-subtitle text-weight-medium text-white flex items-center">
         {{ channel?.name }}
-        <q-avatar
-          v-if="channel?.isAdmin"
-          class="q-ml-xs"
-          icon="local_police"
-          size="xs"
-          color="warning"
-        />
+        <q-badge v-if="channel?.isAdmin" class="q-ml-xs" outline color="warning" label="Admin" />
       </div>
-      <div class="col no-wrap text-center">
+      <div class="col text-center">
         <q-chip v-if="channel?.isPublic" icon="lock" :clickable="false" :ripple="false">
           Public
         </q-chip>
         <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
       </div>
-      <div class="col no-wrap text-right">
+      <div class="col text-right">
         <q-btn flat round size="12px" icon="more_vert" color="white" />
       </div>
     </div>
 
     <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
       <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
-        <q-chat-message :class="{ 'q-mt-md': i == 0 }" class="q-px-sm" :sent="msg.isOwn">
-          <div class="message-body">
+        <q-chat-message
+          :class="{ 'q-mt-md': i == 0 }"
+          class="q-pr-sm"
+          :sent="msg.isOwn"
+          :name="msg.sender"
+          :stamp="calculateTimeAgo(msg.sentAt)"
+        >
+          <template v-slot:avatar v-if="!msg.isOwn">
+            <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
+              {{ msg.sender[0] }}
+              <q-badge
+                :color="i % 3 == 0 ? 'positive' : i % 3 == 1 ? 'negative' : 'secondary'"
+                rounded
+                floating
+              />
+            </q-avatar>
+          </template>
+          <div>
             <span
               v-for="(token, i) in msg.tokens"
               :key="i"
@@ -38,10 +48,16 @@
       </div>
     </q-scroll-area>
 
-    <div v-else class="flex column justify-center items-center" style="flex: 1">
-      <q-icon name="forum" size="64px" color="primary" />
-      <div class="text-h4 q-my-md text-weight-medium">Select a channel to start chatting</div>
-      <div class="text-subtitle">Choose one from the left sidebar or create a new channel.</div>
+    <div v-else class="flex column justify-center items-center col" style="flex: 1">
+      <q-icon name="groups" size="64px" color="primary" />
+      <div class="text-h4 q-my-md text-weight-medium">
+        You have been invited to <span class="text-primary">{{ channel.name }}</span>
+      </div>
+      <div class="text-subtitle">Accept or decline the invite bellow.</div>
+      <div class="flex q-mt-md">
+        <q-btn outline color="positive" label="Accept" class="q-mr-sm" />
+        <q-btn outline color="negative" label="Decline" />
+      </div>
     </div>
 
     <MessageField />
@@ -54,7 +70,7 @@ import MessageField from 'components/MessageField.vue';
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
 import { channels, messages } from 'src/misc/data';
-import { tokenizeMessage } from 'src/misc/helpers';
+import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
 
 export default defineComponent({
   components: { MessageField },
@@ -74,6 +90,9 @@ export default defineComponent({
     },
     loadMessages() {
       this.exampleMessages = messages;
+    },
+    calculateTimeAgo(date: Date) {
+      return calculateTimeAgo(date);
     },
   },
   watch: {

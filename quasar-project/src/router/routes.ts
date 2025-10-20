@@ -13,7 +13,13 @@ const routes: RouteRecordRaw[] = [
         next();
       }
     },
-    children: [{ path: '', component: () => import('pages/MainPage.vue') }],
+    children: [
+      { path: '', component: () => import('pages/MainPage.vue') },
+      {
+        path: 'channels/:id',
+        component: () => import('pages/ChannelMessages.vue'),
+      },
+    ],
   },
   {
     path: '/auth',
@@ -30,16 +36,6 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'login', component: () => import('pages/LoginPage.vue') },
       { path: 'signup', component: () => import('pages/SignupPage.vue') },
-    ],
-  },
-  {
-    path: '/channels',
-    component: () => import('layouts/MainWindowLayout.vue'),
-    children: [
-      {
-        path: ':id',
-        component: () => import('pages/ChannelMessages.vue'),
-      },
     ],
   },
   {

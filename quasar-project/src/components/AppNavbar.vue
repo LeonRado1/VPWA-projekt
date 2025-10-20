@@ -10,7 +10,7 @@
         :style="{ cursor: 'pointer' }"
       />
       <q-space></q-space>
-      <q-avatar color="accent" size="md" text-color="white">
+      <q-avatar color="secondary" size="md" text-color="white">
         {{ userStore.user?.email[0] }}
         <q-badge color="positive" rounded floating />
       </q-avatar>

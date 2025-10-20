@@ -150,7 +150,7 @@ export const messages: Message[] = [
   },
   {
     id: '2',
-    message: 'Nice work @alex, everything looks clean on my end 👍',
+    message: 'Nice work @alex, everything looks clean on my end',
     mentions: ['alex'],
     sender: 'you',
     isOwn: true,
@@ -198,7 +198,7 @@ export const messages: Message[] = [
   },
   {
     id: '8',
-    message: 'Anyone knows why the staging server is so slow? 😩',
+    message: 'Anyone knows why the staging server is so slow?',
     mentions: [],
     sender: 'alex',
     isOwn: false,
@@ -214,7 +214,7 @@ export const messages: Message[] = [
   },
   {
     id: '10',
-    message: 'Confirmed. Restarting the container now. 🔁',
+    message: 'Confirmed. Restarting the container now.',
     mentions: [],
     sender: 'jordan',
     isOwn: false,
