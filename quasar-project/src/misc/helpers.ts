@@ -1,4 +1,10 @@
 import { Notify } from 'quasar';
+import { type Message } from 'src/types/message';
+
+export interface MessageToken {
+  type: 'mention' | 'text';
+  value: string;
+}
 
 export function notify(message: string, isError: boolean): void {
   Notify.create({
@@ -36,4 +42,23 @@ export function calculateTimeAgo(date: Date) {
   }
 
   return `${days} d`;
+}
+
+export function tokenizeMessage(msg: Message): MessageToken[] {
+  const tokens: MessageToken[] = [];
+  const parts = msg.message.split(/(@\w+)/g);
+  const mentions = msg.mentions.map((m) => m.toLowerCase());
+
+  for (const part of parts) {
+    if (!part) continue;
+    const username = part.slice(1).toLowerCase();
+
+    if (part.startsWith('@') && mentions.includes(username)) {
+      tokens.push({ type: 'mention', value: part });
+    } else {
+      tokens.push({ type: 'text', value: part });
+    }
+  }
+
+  return tokens;
 }

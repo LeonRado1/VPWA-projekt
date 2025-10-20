@@ -6,7 +6,7 @@
       :key="channel.id"
       clickable
       @click="openChannel(channel.id)"
-      class="q-px-1"
+      class="q-px-sm"
     >
       <q-item-section>
         <q-item-label lines="1" :class="channel.isInvite ? 'text-weight-medium' : null">
@@ -27,68 +27,12 @@
 import { defineComponent } from 'vue';
 import { type Channel } from 'src/types/channel';
 import { calculateTimeAgo } from 'src/misc/helpers';
+import { channels } from 'src/misc/data';
 
 export default defineComponent({
   data() {
     return {
-      exampleChannels: [
-        {
-          id: '1',
-          name: 'General',
-          lastMessage: 'Welcome to the general channel!',
-          lastActivity: new Date('2025-10-18T09:24:00'),
-          isPublic: true,
-          isInvite: false,
-        },
-        {
-          id: '2',
-          name: 'Project Phoenix',
-          lastMessage: 'The deployment is scheduled for tomorrow.',
-          lastActivity: new Date('2025-10-19T14:12:00'),
-          isPublic: false,
-          isInvite: true,
-        },
-        {
-          id: '3',
-          name: 'Random',
-          lastMessage: 'Check out this funny meme!',
-          lastActivity: new Date('2025-10-19T08:45:00'),
-          isPublic: true,
-          isInvite: false,
-        },
-        {
-          id: '4',
-          name: 'Design',
-          lastMessage: 'New wireframes uploaded.',
-          lastActivity: new Date('2025-10-18T18:30:00'),
-          isPublic: false,
-          isInvite: true,
-        },
-        {
-          id: '5',
-          name: 'Announcements',
-          lastMessage: 'Server maintenance tonight.',
-          lastActivity: new Date('2025-10-19T07:10:00'),
-          isPublic: true,
-          isInvite: false,
-        },
-        {
-          id: '6',
-          name: 'Support',
-          lastMessage: 'I need help with the login issue.',
-          lastActivity: new Date('2025-10-19T12:50:00'),
-          isPublic: false,
-          isInvite: false,
-        },
-        {
-          id: '7',
-          name: 'Marketing',
-          lastMessage: 'Draft for the campaign ready for review.',
-          lastActivity: new Date(),
-          isPublic: true,
-          isInvite: false,
-        },
-      ] as Channel[],
+      exampleChannels: channels,
     };
   },
   methods: {

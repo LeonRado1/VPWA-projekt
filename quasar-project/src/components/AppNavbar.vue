@@ -1,6 +1,6 @@
 <template>
   <q-header>
-    <q-toolbar>
+    <q-toolbar class="q-px-sm">
       <q-btn flat round dense icon="menu" class="q-mr-sm" @click="toggleSidebar()" />
       <img
         style="max-width: 7.5rem"
@@ -12,6 +12,7 @@
       <q-space></q-space>
       <q-avatar color="accent" size="md" text-color="white">
         {{ userStore.user?.email[0] }}
+        <q-badge color="positive" rounded floating />
       </q-avatar>
       <span class="q-ml-sm text-weight-medium">{{ userStore.user?.email }}</span>
       <q-btn icon="logout" size="12px" class="q-mx-md" @click="logout" outline label="Logout" />

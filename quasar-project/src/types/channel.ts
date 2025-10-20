@@ -5,4 +5,5 @@ export type Channel = {
   lastActivity: Date;
   isPublic: boolean;
   isInvite: boolean;
+  isAdmin: boolean;
 };

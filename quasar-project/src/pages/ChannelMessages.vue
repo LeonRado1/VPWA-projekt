@@ -1,33 +1,48 @@
 <template>
-  <q-page class="column flex full-height">
-    <div class="row items-center justify-between flex-none bg-secondary q-pa-sm">
-      <q-icon name="groups" size="36px" color="white" />
-      <div class="column">
-        <div class="text-subtitle1 text-weight-medium text-white">
-          {{ currentChatName }}
-        </div>
+  <q-page class="flex column full-height">
+    <div class="row no-wrap items-center bg-secondary q-pa-sm">
+      <div class="col no-wrap text-subtitle text-weight-medium text-white">
+        {{ channel?.name }}
+        <q-avatar
+          v-if="channel?.isAdmin"
+          class="q-ml-xs"
+          icon="local_police"
+          size="xs"
+          color="warning"
+        />
+      </div>
+      <div class="col no-wrap text-center">
+        <q-chip v-if="channel?.isPublic" icon="lock" :clickable="false" :ripple="false">
+          Public
+        </q-chip>
+        <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
+      </div>
+      <div class="col no-wrap text-right">
+        <q-btn flat round size="12px" icon="more_vert" color="white" />
       </div>
     </div>
 
-    <q-scroll-area style="flex: 1 1 0">
-      <div class="q-pa-sm">
-        <div
-          v-for="msg in messages"
-          :key="msg.id"
-          :class="['row items-end', msg.isOwn ? 'justify-end' : 'justify-start']"
-        >
-          <q-chat-message
-            :text="[msg.text]"
-            :sent="msg.isOwn"
-            :stamp="formatTime(msg.timestamp)"
-            :avatar="!msg.isOwn ? profilePicture : undefined"
-            :bg-color="msg.isOwn ? 'secondary' : 'grey-4'"
-            :text-color="msg.isOwn ? 'white' : 'dark'"
-            class="q-mb-xs"
-          />
-        </div>
+    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
+      <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
+        <q-chat-message :class="{ 'q-mt-md': i == 0 }" class="q-px-sm" :sent="msg.isOwn">
+          <div class="message-body">
+            <span
+              v-for="(token, i) in msg.tokens"
+              :key="i"
+              :class="{ 'text-weight-bold color bg-warning': token.type === 'mention' }"
+            >
+              {{ token.value }}
+            </span>
+          </div>
+        </q-chat-message>
       </div>
     </q-scroll-area>
+
+    <div v-else class="flex column justify-center items-center" style="flex: 1">
+      <q-icon name="forum" size="64px" color="primary" />
+      <div class="text-h4 q-my-md text-weight-medium">Select a channel to start chatting</div>
+      <div class="text-subtitle">Choose one from the left sidebar or create a new channel.</div>
+    </div>
 
     <MessageField />
   </q-page>
@@ -35,92 +50,51 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import profilePicture from '../assets/profile-picture.png';
-import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
 import MessageField from 'components/MessageField.vue';
-
-interface Message {
-  id: number;
-  text: string;
-  timestamp: Date;
-  isOwn: boolean;
-}
+import { type Channel } from 'src/types/channel';
+import { type Message } from 'src/types/message';
+import { channels, messages } from 'src/misc/data';
+import { tokenizeMessage } from 'src/misc/helpers';
 
 export default defineComponent({
-  name: 'MainPage',
   components: { MessageField },
   data() {
     return {
-      currentChatName: 'Channel name',
-      newMessage: '',
-      messagesContainer: null as HTMLElement | null,
-      messages: [
-        {
-          id: 1,
-          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60),
-          isOwn: false,
-        },
-      ] as Message[],
+      exampleChannels: channels,
+      channel: null as Channel | null,
+      exampleMessages: [] as Message[],
     };
+  },
+  methods: {
+    loadChannel(channelId: string) {
+      this.channel = this.exampleChannels.find((x) => x.id === channelId)!;
+      if (!this.channel.isInvite) {
+        this.loadMessages();
+      }
+    },
+    loadMessages() {
+      this.exampleMessages = messages;
+    },
   },
   watch: {
     '$route.params.id': {
       handler(newId) {
-        this.loadMessages(newId);
+        this.loadChannel(newId);
       },
       immediate: true,
     },
   },
-  beforeRouteUpdate(
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
-    next: NavigationGuardNext,
-  ) {
-    const rawId = to.params.id;
-    const id = Array.isArray(rawId) ? rawId[0] : (rawId ?? '');
-    this.loadMessages(id);
-    next();
-  },
   computed: {
-    profilePicture() {
-      return profilePicture;
-    },
-  },
-  methods: {
-    loadMessages(newId: string | number | string[] | undefined) {
-      // CHANGE NEWID TO CORRECT TYPE
-      const id = Array.isArray(newId) ? newId[0] : (newId ?? '');
-      this.currentChatName = String(id);
-      this.messages = [
-        {
-          id: 1,
-          text: `Messages for ${String(this.$route.params.id)}`,
-          timestamp: new Date(Date.now() - 1000 * 60 * 60),
-          isOwn: false,
-        },
-      ] as Message[];
-      console.log('Loading messages for user id:', id);
-    },
-    sendMessage() {},
-
-    formatTime(timestamp: Date): string {
-      const now = new Date();
-      const diff = now.getTime() - timestamp.getTime();
-      const minutes = Math.floor(diff / (1000 * 60));
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-      if (minutes < 1) return 'Just now';
-      if (minutes < 60) return `${minutes}m`;
-      if (hours < 24) return `${hours}h`;
-      if (days < 7) return `${days}d`;
-
-      return timestamp.toLocaleDateString();
+    tokenizedMessages() {
+      return this.exampleMessages.map((x) => ({
+        ...x,
+        tokens: tokenizeMessage(x),
+      }));
     },
   },
   mounted() {
-    this.messagesContainer = this.$refs.messagesContainer as HTMLElement;
+    const id = this.$route.params.id as string;
+    this.loadChannel(id);
   },
 });
 </script>
