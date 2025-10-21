@@ -13,11 +13,57 @@
         </div>
         <q-separator />
         <div class="row gap-2 q-mt-md">
-          <q-btn outline size="sm" round class="q-mr-sm" icon="motion_photos_on" />
-          <q-btn outline size="sm" round icon="library_add" />
+          <q-btn flat round size="sm" class="q-mr-sm" icon="settings" />
+          <q-btn
+            @click="channelDialogOpen = !channelDialogOpen"
+            flat
+            round
+            size="sm"
+            icon="library_add"
+          />
         </div>
       </div>
     </q-drawer>
+
+    <q-dialog v-model="channelDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Create New Channel</q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="newChannelName"
+            filled
+            dense
+            label="Channel Name"
+            type="text"
+            lazy-rules
+            :rules="[(val) => (val && val.length > 0) || 'This field is required']"
+          >
+            <template v-slot:prepend>
+              <q-icon size="xs" name="groups" />
+            </template>
+          </q-input>
+          <div class="flex justify-center items-center text-weight-bold">
+            <span :class="{ 'text-primary': !newChannelIsPublic }">Private</span>
+            <q-toggle
+              v-model="newChannelIsPublic"
+              color="primary"
+              checked-icon="lock_open"
+              unchecked-icon="lock"
+              keep-color
+            />
+            <span :class="{ 'text-primary': newChannelIsPublic }">Public</span>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" />
+          <q-btn flat label="Cancel" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-page-container>
       <router-view />
@@ -39,6 +85,9 @@ export default defineComponent({
   data() {
     return {
       sidebarOpen: true,
+      channelDialogOpen: false,
+      newChannelName: '',
+      newChannelIsPublic: false,
     };
   },
 });

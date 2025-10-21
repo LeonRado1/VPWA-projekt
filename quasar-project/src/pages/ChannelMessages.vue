@@ -6,7 +6,7 @@
         <q-badge v-if="channel?.isAdmin" class="q-ml-xs" outline color="warning" label="Admin" />
       </div>
       <div class="col text-center">
-        <q-chip v-if="channel?.isPublic" icon="lock" :clickable="false" :ripple="false">
+        <q-chip v-if="channel?.isPublic" icon="lock_open" :clickable="false" :ripple="false">
           Public
         </q-chip>
         <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
