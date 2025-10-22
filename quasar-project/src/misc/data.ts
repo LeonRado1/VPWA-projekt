@@ -225,3 +225,7 @@ export const messages: Message[] = [
 export function leaveChannelById(channelId: string): void {
   channels.value = channels.value.filter(ch => ch.id !== channelId)
 }
+
+export function addChannel(newChannel: Channel): void {
+  channels.value.push(newChannel);
+}

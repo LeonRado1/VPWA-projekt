@@ -59,7 +59,7 @@
         <q-separator />
 
         <q-card-actions align="right">
-          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" />
+          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" @click="createChannel()"/>
           <q-btn flat label="Cancel" color="secondary" v-close-popup />
         </q-card-actions>
       </q-card>
@@ -75,7 +75,8 @@
 import { defineComponent } from 'vue';
 import AppNavbar from 'components/AppNavbar.vue';
 import ChannelsList from 'components/ChannelsList.vue';
-
+import { addChannel } from 'src/misc/data';
+import type { Channel } from 'src/types/channel';
 export default defineComponent({
   name: 'MainWindowLayout',
   components: {
@@ -90,5 +91,35 @@ export default defineComponent({
       newChannelIsPublic: false,
     };
   },
+  methods: {
+    createChannel() {
+      if (this.newChannelName.trim() === '') {
+        return;
+      }
+      const newChannel: Channel = {
+        id: Date.now().toString(),
+        name: this.newChannelName,
+        lastMessage: 'Welcome to the team, everyone!',
+        lastActivity: new Date(),
+        isPublic: this.newChannelIsPublic,
+        isInvite: false,
+        isAdmin: true,
+
+      };
+      addChannel(newChannel);
+      this.newChannelName = '';
+      this.newChannelIsPublic = false;
+      this.channelDialogOpen = false;
+    },
+  },
 });
 </script>
+
+<!-- 
+    id: '13',
+    name: 'General',
+    lastMessage: 'Welcome to the team, everyone!',
+    lastActivity: new Date('2025-10-20T02:10:00'),
+    isPublic: true,
+    isInvite: false,
+    isAdmin: true, -->
