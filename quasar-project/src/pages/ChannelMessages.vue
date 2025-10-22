@@ -12,10 +12,22 @@
         <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
       </div>
       <div class="col text-right">
-        <q-btn flat round size="12px" icon="more_vert" color="white" />
+        <q-btn flat round size="12px" icon="exit_to_app" color="white" aria-label="Leave channel" @click="leaveChannelDialogOpen = !leaveChannelDialogOpen">
+          <q-tooltip anchor="top middle">Leave channel</q-tooltip>
+        </q-btn>
       </div>
     </div>
+    <q-dialog v-model="leaveChannelDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Are you sure you want to leave this channel?</q-card-section>
+        <q-separator />
 
+        <q-card-actions align="right">
+          <q-btn unelevated class="q-mr-xs" label="Leave" color="primary" @click="leaveChannel" />
+          <q-btn flat label="Cancel" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
       <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
         <q-chat-message
@@ -71,7 +83,7 @@ import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
 import { channels, messages } from 'src/misc/data';
 import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
-
+import { leaveChannelById } from 'src/misc/data';
 export default defineComponent({
   components: { MessageField },
   data() {
@@ -79,6 +91,7 @@ export default defineComponent({
       exampleChannels: channels,
       channel: null as Channel | null,
       exampleMessages: [] as Message[],
+      leaveChannelDialogOpen: false,
     };
   },
   methods: {
@@ -93,6 +106,12 @@ export default defineComponent({
     },
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
+    },
+    async leaveChannel() {
+      if (this.channel) {
+        leaveChannelById(this.channel.id);
+        await this.$router.push('/');
+      }
     },
   },
   watch: {

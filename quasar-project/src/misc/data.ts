@@ -1,7 +1,7 @@
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
-
-export const channels: Channel[] = [
+import {ref} from 'vue';
+export const channels = ref<Channel[]>([
   {
     id: '1',
     name: 'General',
@@ -137,7 +137,7 @@ export const channels: Channel[] = [
     isInvite: false,
     isAdmin: false,
   },
-];
+]);
 
 export const messages: Message[] = [
   {
@@ -221,3 +221,7 @@ export const messages: Message[] = [
     sentAt: new Date(),
   },
 ];
+
+export function leaveChannelById(channelId: string): void {
+  channels.value = channels.value.filter(ch => ch.id !== channelId)
+}
