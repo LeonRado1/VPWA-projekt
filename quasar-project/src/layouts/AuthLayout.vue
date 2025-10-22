@@ -1,10 +1,22 @@
 <template>
+  <div class="fixed-top-right q-pa-md" style="z-index: 100">
+    <q-btn
+      flat
+      round
+      :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
+      @click="toggleDarkMode"
+    />
+  </div>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <q-page class="flex flex-center q-my-xl">
-        <q-card class="q-pa-md shadow-2 rounded-xl" style="min-width: 400px">
+        <q-card class="q-pa-md shadow-1 rounded-xl" style="min-width: 400px">
           <div class="flex flex-center q-my-lg">
-            <img style="max-width: 15rem" alt="Threadly Logo" src="/logo-light.svg" />
+            <img
+              style="max-width: 15rem"
+              alt="Threadly Logo"
+              :src="$q.dark.isActive ? '/logo-dark.svg' : '/logo-light.svg'"
+            />
           </div>
           <q-tabs>
             <q-route-tab to="/auth/login" label="Login" exact />
@@ -18,4 +30,20 @@
   </q-layout>
 </template>
 
-<script lang="ts"></script>
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useQuasar } from 'quasar';
+
+export default defineComponent({
+  data() {
+    return {
+      $q: useQuasar(),
+    };
+  },
+  methods: {
+    toggleDarkMode() {
+      this.$q.dark.toggle();
+    },
+  },
+});
+</script>

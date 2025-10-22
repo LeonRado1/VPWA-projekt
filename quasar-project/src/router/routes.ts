@@ -13,7 +13,13 @@ const routes: RouteRecordRaw[] = [
         next();
       }
     },
-    children: [{ path: '', component: () => import('pages/MainPage.vue') }],
+    children: [
+      { path: '', component: () => import('pages/MainPage.vue') },
+      {
+        path: 'channels/:id',
+        component: () => import('pages/ChannelMessages.vue'),
+      },
+    ],
   },
   {
     path: '/auth',
@@ -32,27 +38,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'signup', component: () => import('pages/SignupPage.vue') },
     ],
   },
-  {
-  path: '/channels',
-  component: () => import('layouts/MainWindowLayout.vue'),
-  children: [
-    {
-      path: ':id',
-      component: () => import('pages/ChannelMessages.vue')
-    }
-  ]
-},
-{
-  path: '/users',
-  component: () => import('layouts/MainWindowLayout.vue'),
-  children: [
-    {
-      path: ':id',
-      component: () => import('pages/UserMessages.vue')
-    }
-  ]
-},
-
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),

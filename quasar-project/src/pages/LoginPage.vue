@@ -42,8 +42,9 @@
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
 import { useUserStore } from 'src/stores/user';
+import { defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
   data() {
     return {
       email: '',
@@ -52,13 +53,13 @@ export default {
     };
   },
   methods: {
-    login() {
+    async login() {
       console.log(this.email, this.password);
       if (this.email.length > 10) {
         this.userStore.setUser({
           email: this.email,
         });
-        this.$router.push('/')
+        await this.$router.push('/');
       } else {
         notify('Invalid login credentials', true);
       }
@@ -68,5 +69,5 @@ export default {
       return this.email.length > 0 && this.password.length > 0 && pattern.test(this.email);
     },
   },
-};
+});
 </script>

@@ -1,68 +1,70 @@
 <template>
-  <q-layout view=" Lpr lHh lFf" class="full-width">
-    <AppNavbar />
+  <q-layout view="hHh Lpr lff" class="full-width">
+    <AppNavbar v-model:sidebarOpen="sidebarOpen" />
 
-    <q-drawer show-if-above bordered>
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10;" class="bg-secondary">
-          <q-item-label header class="text-white">Channels</q-item-label>
+    <q-drawer show-if-above v-model="sidebarOpen" bordered>
+      <div class="q-px-sm q-py-md full-height flex column no-wrap">
+        <div class="text-h6 text-secondary text-weight-medium q-mb-md" style="line-height: 1">
+          Channels
         </div>
-        <div class="q-pa-md">
-            <q-list dense>
-            <q-item v-for="channel in exampleChannels" :key="channel" clickable dense @click="openChannel(channel)">
-              <TeamComponent :text="channel" />
-            </q-item>
-            </q-list>
+        <q-separator />
+        <div class="q-my-md" style="flex: 1; overflow-y: auto">
+          <ChannelsList />
         </div>
-      </div>
-
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
-          <q-item-label header class="text-white">Direct Messages</q-item-label>
-        </div>
-        <div class="q-pa-md">
-          <q-list>
-            <q-item v-for="user in exampleDirectMessages" :key="user" clickable dense @click="openUser(user)">
-              <TeamComponent :text="user" /> 
-            </q-item>
-          </q-list>
-        </div>
-      </div>
-
-      <div style="max-height: 33.33%; overflow-y: auto">
-        <div style="position: sticky; top: 0; z-index: 10" class="bg-secondary">
-          <q-item-label header class="text-white">Command Line</q-item-label>
-        </div>
-        <div>
-          <div class="q-pa-md">
-            <div v-for="command in commandHistory" :key="command.id">
-              <div style="color: green; font-weight: 800">{{ command.prompt }}</div>
-              <div v-if="command.output" style="color: gray">{{ command.output }}</div>
-            </div>
-          </div>
-        </div>
-        <div class="q-pa-md" style="position: sticky; bottom: 0; background: white; z-index: 10">
-          <q-input
-            v-model="drawerInputText"
-            placeholder="Enter command..."
-            outlined
-            dense
-            @keyup.enter="handleDrawerInput"
-          >
-            <template v-slot:append>
-              <q-btn
-                icon="send"
-                flat
-                round
-                dense
-                @click="handleDrawerInput"
-                :disable="!drawerInputText.trim()"
-              />
-            </template>
-          </q-input>
+        <q-separator />
+        <div class="row gap-2 q-mt-md">
+          <q-btn flat round size="sm" class="q-mr-sm" icon="settings" />
+          <q-btn
+            @click="channelDialogOpen = !channelDialogOpen"
+            flat
+            round
+            size="sm"
+            icon="library_add"
+          />
         </div>
       </div>
     </q-drawer>
+
+    <q-dialog v-model="channelDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Create New Channel</q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="newChannelName"
+            filled
+            dense
+            label="Channel Name"
+            type="text"
+            lazy-rules
+            :rules="[(val) => (val && val.length > 0) || 'This field is required']"
+          >
+            <template v-slot:prepend>
+              <q-icon size="xs" name="groups" />
+            </template>
+          </q-input>
+          <div class="flex justify-center items-center text-weight-bold">
+            <span :class="{ 'text-primary': !newChannelIsPublic }">Private</span>
+            <q-toggle
+              v-model="newChannelIsPublic"
+              color="primary"
+              checked-icon="lock_open"
+              unchecked-icon="lock"
+              keep-color
+            />
+            <span :class="{ 'text-primary': newChannelIsPublic }">Public</span>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" />
+          <q-btn flat label="Cancel" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -71,101 +73,22 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useQuasar } from 'quasar';
-import profilePicture from '../assets/profile-picture.png';
-import TeamComponent from 'src/components/TeamComponent.vue';
 import AppNavbar from 'components/AppNavbar.vue';
-
-interface CommandEntry {
-  id: number;
-  prompt: string;
-  output?: string;
-}
+import ChannelsList from 'components/ChannelsList.vue';
 
 export default defineComponent({
   name: 'MainWindowLayout',
   components: {
+    ChannelsList,
     AppNavbar,
-    TeamComponent,
   },
   data() {
     return {
-      headerTitle: 'Name',
-      drawerInputText: '',
-      exampleChannels: [
-        'Channel 1',
-        'Channel 2',
-        'Channel 3',
-        'Channel 4',
-        'Channel 5',
-        'Channel 6',
-        'Channel 7',
-        'Channel 8',
-        'Channel 9',
-      ],
-      exampleDirectMessages: [
-        'User A',
-        'User B',
-        'User C',
-        'User D',
-        'User E',
-        'User F',
-        'User G',
-        'User H',
-        'User I',
-      ],
-      commandHistory: [
-        { id: 1, prompt: '> help', output: 'Available commands: help, clear, status' },
-        { id: 2, prompt: '> status', output: 'System online' },
-        { id: 2, prompt: '> status', output: 'System online' },
-        { id: 2, prompt: '> status', output: 'System online' },
-        { id: 2, prompt: '> status', output: 'System online' },
-        { id: 2, prompt: '> status', output: 'System online' },
-      ] as CommandEntry[],
+      sidebarOpen: true,
+      channelDialogOpen: false,
+      newChannelName: '',
+      newChannelIsPublic: false,
     };
   },
-  computed: {
-    avatarSize(): string {
-      const $q = useQuasar();
-      if ($q.screen.xs) return '35px';
-      if ($q.screen.sm) return '40px';
-      return '45px';
-    },
-    profilePicture() {
-      return profilePicture;
-    },
-  },
-  methods: {
-    handleDrawerInput() {
-      if (this.drawerInputText.trim()) {
-        const newCommand: CommandEntry = {
-          id: Date.now(),
-          prompt: `> ${this.drawerInputText.trim()}`,
-          output: `Command executed: ${this.drawerInputText.trim()}`,
-        };
-        this.commandHistory.push(newCommand);
-        this.drawerInputText = '';
-      }
-    },
-    async openChannel(channel: string) {
-      const encoded = encodeURIComponent(channel);
-      try {
-        await this.$router.push({ path: `/channels/${encoded}` });
-      } catch (err) {
-        
-        console.error('Navigation error (openChannel):', err);
-      }
-    },
-    async openUser(user: string) {
-      const encoded = encodeURIComponent(user);
-      try {
-        await this.$router.push({ path: `/users/${encoded}` });
-      } catch (err) {
-        
-        console.error('Navigation error (openUser):', err);
-      }
-    },
-  },
-  
 });
 </script>

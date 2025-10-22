@@ -1,163 +1,119 @@
-  <template>
-  <q-page class="column bg-grey-2" >
-
-    <div class="row items-center justify-between flex-none bg-secondary q-pa-sm q-mb-sm rounded-lg shadow-1" style="position: sticky; top: 50px; z-index: 30;">
-      <div class="row items-center" style=" ">
-        <q-avatar size="40px" class="q-mr-sm rounded-full">
-          <img :src="profilePicture" alt="User" />
-        </q-avatar>
-        <div class="column">
-          <div class="text-subtitle1 text-weight-medium text-white">
-            {{ currentChatName }}
-          </div>
-        </div>
+<template>
+  <q-page class="flex column full-height no-wrap">
+    <div class="row items-center bg-secondary q-pa-sm">
+      <div class="col text-subtitle text-weight-medium text-white flex items-center">
+        {{ channel?.name }}
+        <q-badge v-if="channel?.isAdmin" class="q-ml-xs" outline color="warning" label="Admin" />
       </div>
-      <div class="row items-center chat-actions">
-        
+      <div class="col text-center">
+        <q-chip v-if="channel?.isPublic" icon="lock_open" :clickable="false" :ripple="false">
+          Public
+        </q-chip>
+        <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
+      </div>
+      <div class="col text-right">
+        <q-btn flat round size="12px" icon="more_vert" color="white" />
       </div>
     </div>
 
-   
-    <div
-        class="column q-gutter-sm"
-        style="flex: 1 1 auto; min-height: 0; overflow-y: auto;"
-        ref="messagesContainer"
-    >
-        <div
-            v-for="msg in messages"
-            :key="msg.id"
-            :class="[
-                'row items-end',
-                msg.isOwn ? 'justify-end' : 'justify-start'
-            ]"
+    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
+      <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
+        <q-chat-message
+          :class="{ 'q-mt-md': i == 0 }"
+          class="q-pr-sm"
+          :sent="msg.isOwn"
+          :name="msg.sender"
+          :stamp="calculateTimeAgo(msg.sentAt)"
         >
-            <q-chat-message
-                :text="[msg.text]"
-                :sent="msg.isOwn"
-                :stamp="formatTime(msg.timestamp)"
-                :avatar="!msg.isOwn ? profilePicture : undefined"
-                :bg-color="msg.isOwn ? 'secondary' : 'grey-4'"
-                :text-color="msg.isOwn ? 'white' : 'dark'"
-                class="q-mb-xs"
-                style="margin: 10px;"
-            />
-        </div>
+          <template v-slot:avatar v-if="!msg.isOwn">
+            <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
+              {{ msg.sender[0] }}
+              <q-badge
+                :color="i % 3 == 0 ? 'positive' : i % 3 == 1 ? 'negative' : 'secondary'"
+                rounded
+                floating
+              />
+            </q-avatar>
+          </template>
+          <div>
+            <span
+              v-for="(token, i) in msg.tokens"
+              :key="i"
+              :class="{ 'text-weight-bold color bg-warning': token.type === 'mention' }"
+            >
+              {{ token.value }}
+            </span>
+          </div>
+        </q-chat-message>
+      </div>
+    </q-scroll-area>
+
+    <div v-else class="flex column justify-center items-center col" style="flex: 1">
+      <q-icon name="groups" size="64px" color="primary" />
+      <div class="text-h4 q-my-md text-weight-medium">
+        You have been invited to <span class="text-primary">{{ channel.name }}</span>
+      </div>
+      <div class="text-subtitle">Accept or decline the invite bellow.</div>
+      <div class="flex q-mt-md">
+        <q-btn outline color="positive" label="Accept" class="q-mr-sm" />
+        <q-btn outline color="negative" label="Decline" />
+      </div>
     </div>
 
-  <div class="row items-center q-pa-sm bg-grey-1 flex-none rounded-lg shadow-1" style="position: sticky; bottom: 0px;">
-      <q-input
-        v-model="newMessage"
-        placeholder="Type a message..."
-        outlined
-        dense
-        class="col rounded-lg"
-        @keyup.enter="sendMessage"
-        autogrow
-        :max-height="100"
-      />
-      <q-btn
-        icon="send"
-        flat
-        round
-        dense
-        color="primary"
-        class="q-ml-sm rounded-full"
-        @click="sendMessage"
-      />
-    </div>
+    <MessageField />
   </q-page>
 </template>
 
+<script lang="ts">
+import { defineComponent } from 'vue';
+import MessageField from 'components/MessageField.vue';
+import { type Channel } from 'src/types/channel';
+import { type Message } from 'src/types/message';
+import { channels, messages } from 'src/misc/data';
+import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
 
-  <script lang="ts">
-    import { defineComponent } from 'vue';
-    import profilePicture from '../assets/profile-picture.png';
-    import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
-
-
-  interface Message {
-    id: number;
-    text: string;
-    timestamp: Date;
-    isOwn: boolean;
-  }
-
-  export default defineComponent({
-    name: 'MainPage',
-    data() {
-      return {
-        currentChatName: 'Channel name',
-        newMessage: '',
-        messagesContainer: null as HTMLElement | null,
-        messages: [
-          {
-            id: 1,
-            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60),
-            isOwn: false
-          }
-        ] as Message[]
-      };
-    },
-      watch: {
-        '$route.params.id': {
-            handler(newId) {
-                this.loadMessages(newId)
-            },
-            immediate: true 
-        }
-    },
-     beforeRouteUpdate(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) {
-        const rawId = to.params.id;
-        const id = Array.isArray(rawId) ? rawId[0] : rawId ?? '';
-        this.loadMessages(id);
-      next();
-    },
-    computed: {
-      profilePicture() {
-        return profilePicture;
+export default defineComponent({
+  components: { MessageField },
+  data() {
+    return {
+      exampleChannels: channels,
+      channel: null as Channel | null,
+      exampleMessages: [] as Message[],
+    };
+  },
+  methods: {
+    loadChannel(channelId: string) {
+      this.channel = this.exampleChannels.find((x) => x.id === channelId)!;
+      if (!this.channel.isInvite) {
+        this.loadMessages();
       }
     },
-    methods: {
-        loadMessages(newId: string | number | string[] | undefined){
-            // CHANGE NEWID TO CORRECT TYPE
-            const id = Array.isArray(newId) ? newId[0] : (newId ?? '');
-            this.currentChatName = String(id);
-            this.messages = [
-                {
-                    id: 1,
-                    text: `Messages for ${String(this.$route.params.id)}`,
-                    timestamp: new Date(Date.now() - 1000 * 60 * 60),
-                    isOwn: false
-                }
-                ] as Message[]
-            console.log('Loading messages for user id:', id);
-        },
-        sendMessage() {
-
-        },
-      
-        formatTime(timestamp: Date): string {
-            const now = new Date();
-            const diff = now.getTime() - timestamp.getTime();
-            const minutes = Math.floor(diff / (1000 * 60));
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return `${minutes}m`;
-            if (hours < 24) return `${hours}h`;
-            if (days < 7) return `${days}d`;
-
-            return timestamp.toLocaleDateString();
-        }
+    loadMessages() {
+      this.exampleMessages = messages;
     },
-    mounted() {
-      this.messagesContainer = this.$refs.messagesContainer as HTMLElement;
+    calculateTimeAgo(date: Date) {
+      return calculateTimeAgo(date);
     },
-
-
-  });
-  </script>
-
-
+  },
+  watch: {
+    '$route.params.id': {
+      handler(newId) {
+        this.loadChannel(newId);
+      },
+      immediate: true,
+    },
+  },
+  computed: {
+    tokenizedMessages() {
+      return this.exampleMessages.map((x) => ({
+        ...x,
+        tokens: tokenizeMessage(x),
+      }));
+    },
+  },
+  mounted() {
+    const id = this.$route.params.id as string;
+    this.loadChannel(id);
+  },
+});
+</script>
