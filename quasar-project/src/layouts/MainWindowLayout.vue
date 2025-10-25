@@ -41,7 +41,6 @@
             <span :class="{ 'text-primary': NotificationSwitch }"></span>
           </div>
           <div>
-            <span>Status</span>
 
           </div>
         </q-card-section>
