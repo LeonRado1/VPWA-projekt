@@ -33,19 +33,24 @@
     </q-drawer>
 
     <q-dialog v-model="openSettings" persistent>
-      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
-        <q-card-section class="text-h6 text-secondary">Settings</q-card-section>
-        <q-separator />
+      <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
+        <q-card-section class="text-h6 text-secondary">Notifications</q-card-section>
         <q-card-section>
           <div class="flex justify-center items-center text-weight-bold">
-            <span>Notifications</span>
-            <span :class="{ 'text-primary': !NotificationSwitch }"></span>
-            <q-toggle v-model="NotificationSwitch" color="primary" keep-color />
-            <span :class="{ 'text-primary': NotificationSwitch }"></span>
+            <span :class="{ 'text-primary': !notificationSwitch }">All</span>
+            <q-toggle
+              v-model="notificationSwitch"
+              color="primary"
+              keep-color
+              checked-icon="notifications_off"
+              unchecked-icon="notifications"
+            />
+            <span :class="{ 'text-primary': notificationSwitch }">Mentions</span>
           </div>
-          <div></div>
         </q-card-section>
+        <q-separator />
         <q-card-actions align="right">
+          <q-btn unelevated class="q-mr-xs" label="Save" color="primary" />
           <q-btn flat label="Close" color="secondary" v-close-popup />
         </q-card-actions>
       </q-card>
@@ -116,7 +121,7 @@ export default defineComponent({
       newChannelName: '',
       newChannelIsPublic: false,
       openSettings: false,
-      NotificationSwitch: false,
+      notificationSwitch: false,
     };
   },
   methods: {

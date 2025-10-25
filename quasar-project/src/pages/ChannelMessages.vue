@@ -13,6 +13,7 @@
       </div>
       <div class="col text-right">
         <q-btn
+          v-if="!channel?.isInvite && !channel?.isAdmin"
           flat
           round
           size="12px"
@@ -21,7 +22,7 @@
           aria-label="Leave channel"
           @click="leaveChannelDialogOpen = !leaveChannelDialogOpen"
         >
-          <q-tooltip anchor="top middle">Leave channel</q-tooltip>
+          <q-tooltip anchor="top left">Leave channel</q-tooltip>
         </q-btn>
         <q-btn
           v-if="channel?.isAdmin"
@@ -33,7 +34,7 @@
           aria-label="Channel settings"
           @click="adminOptionsDialogOpen = !adminOptionsDialogOpen"
         >
-          <q-tooltip anchor="top middle">Channel settings</q-tooltip>
+          <q-tooltip anchor="top left">Channel settings</q-tooltip>
         </q-btn>
       </div>
     </div>
@@ -41,10 +42,7 @@
     <q-dialog v-model="adminOptionsDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
         <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
-        <q-separator />
-        <q-card-actions class="column">
-          <q-btn flat label="Delete Channel" color="negative" @click="leaveChannel" />
-          <q-btn flat label="Leave Channel" color="primary" @click="leaveChannel" />
+        <q-card-section>
           <div class="row justify-center items-center text-weight-bold">
             <span :class="{ 'text-primary': !isPublic }">Private</span>
             <q-toggle
@@ -56,11 +54,39 @@
             />
             <span :class="{ 'text-primary': isPublic }">Public</span>
           </div>
-          <div class="row justify-center items-center text-weight-bold">
-            <q-input v-model="userToAdd" label="Add new user" />
-            <q-btn flat label="Add" color="primary" @click="addUserToChannel" />
+          <div class="row items-start no-wrap q-mt-md">
+            <q-input
+              class="col-9 q-mr-sm"
+              v-model="userToAdd"
+              label="New User"
+              filled
+              dense
+              lazy-rules
+              :rules="[(val) => (val && val.length > 0) || 'This field is required']"
+            >
+              <template v-slot:prepend>
+                <q-icon size="xs" name="person" />
+              </template>
+            </q-input>
+            <q-btn
+              class="col-3"
+              flat
+              label="Add"
+              color="primary"
+              size="16px"
+              :disable="!userToAdd"
+              @click="addUserToChannel"
+            />
           </div>
-        </q-card-actions>
+          <q-btn
+            class="full-width q-mt-md"
+            unelevated
+            label="Delete Channel"
+            color="negative"
+            @click="leaveChannel"
+          />
+        </q-card-section>
+        <q-separator />
         <q-card-actions align="right">
           <q-btn flat label="Close" color="secondary" v-close-popup />
         </q-card-actions>
@@ -69,7 +95,7 @@
 
     <q-dialog v-model="leaveChannelDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
-        <q-card-section class="text-h6 text-secondary"
+        <q-card-section class="text-h6 text-weight-regular"
           >Are you sure you want to leave this channel?</q-card-section
         >
         <q-separator />
@@ -80,6 +106,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
     <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
       <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
         <q-chat-message
@@ -88,7 +115,11 @@
           :sent="msg.isOwn"
           :name="msg.sender"
           :stamp="calculateTimeAgo(msg.sentAt)"
-          :bg-color="msg.mentions.includes('jordan') ? 'warning' : undefined"
+          :bg-color="
+            msg.mentions.includes('jordan') && !['system', 'you'].includes(msg.sender)
+              ? 'warning'
+              : undefined
+          "
         >
           <template v-slot:avatar v-if="!msg.isOwn">
             <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
@@ -124,8 +155,8 @@
       </div>
       <div class="text-subtitle">Accept or decline the invite bellow.</div>
       <div class="flex q-mt-md">
-        <q-btn outline color="positive" label="Accept" class="q-mr-sm" />
-        <q-btn outline color="negative" label="Decline" />
+        <q-btn outline color="positive" label="Accept" class="q-mr-sm" @click="acceptChannel()" />
+        <q-btn outline color="negative" label="Decline" @click="leaveChannel()" />
       </div>
     </div>
 
@@ -138,8 +169,8 @@ import { defineComponent, nextTick } from 'vue';
 import MessageField from 'components/MessageField.vue';
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
-import { channels, messages, users } from 'src/misc/data';
-import { calculateTimeAgo, notify, tokenizeMessage } from 'src/misc/helpers';
+import { acceptChannelById, addUser, channels, messages, users } from 'src/misc/data';
+import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
 import { leaveChannelById } from 'src/misc/data';
 import { type QScrollArea } from 'quasar';
 
@@ -175,6 +206,12 @@ export default defineComponent({
         await this.$router.push('/');
       }
     },
+    acceptChannel() {
+      if (this.channel) {
+        acceptChannelById(this.channel.id);
+        this.loadChannel(this.channel.id);
+      }
+    },
     changeChannelVisibility() {
       if (this.channel) {
         this.channel.isPublic = !this.channel.isPublic;
@@ -195,7 +232,7 @@ export default defineComponent({
       if (name === '') {
         return;
       }
-      notify(`Invitation sent to ${name}`, false);
+      addUser({ email: '', nickname: name });
       this.userToAdd = '';
     },
   },

@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { addChannel, addMessage, leaveChannelById } from 'src/misc/data';
+import { addChannel, addMessage, addUser, leaveChannelById } from 'src/misc/data';
 import type { Message } from 'src/types/message';
 import { type Channel } from 'src/types/channel';
 
@@ -68,6 +68,9 @@ export default defineComponent({
           }
 
           case '/invite':
+            addUser({ email: '', nickname: this.commands[1]! });
+            break;
+
           case '/revoke':
           case '/kick':
             break;

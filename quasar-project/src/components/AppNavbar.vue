@@ -11,37 +11,31 @@
       />
       <q-space></q-space>
 
-
-  <div class="q-pa-md">
-      <q-btn flat round >
-        <q-avatar color="secondary" size="md" text-color="white">
-          {{ userStore.user?.email[0] }}
-          <q-badge :color="status" rounded floating />
-        </q-avatar>
-        <q-menu>
-          <div class="column no-wrap q-pa-md">
-            <div class="column">
-              <div class="text-h6 q-mb-md">Status</div>
-            </div>
-                <q-btn-toggle
+      <div>
+        <q-btn flat round>
+          <q-avatar color="secondary" size="md" text-color="white">
+            {{ userStore.user?.email[0] }}
+            <q-badge :color="status" rounded floating />
+          </q-avatar>
+          <q-menu>
+            <div class="column no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Status</div>
+              </div>
+              <q-btn-toggle
                 v-model="status"
                 spread
                 toggle-color="primary"
                 unelevated
                 size="sm"
                 :options="options"
-                class="status-toggle  column q-gutter-md"
+                class="status-toggle column q-gutter-md"
               />
-            <q-separator vertical inset class="q-mx-lg" />
-
-            <div class="column items-center">
             </div>
-          </div>
-        </q-menu>
-      </q-btn>
+          </q-menu>
+        </q-btn>
+      </div>
 
-  </div>
-     
       <span class="q-ml-sm text-weight-medium">{{ userStore.user?.email }}</span>
       <q-btn icon="logout" size="12px" class="q-mx-md" @click="logout" outline label="Logout" />
       <q-btn
@@ -63,31 +57,31 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   data() {
     const options = [
-        {
-          label: 'Online',
-          value: 'green',
-          icon: 'wifi', 
-          color: 'blue',
-        },
-        {
-          label: 'Busy',
-          value: 'red',
-          icon: 'notifications_active',
-          color: 'blue',
-        },
-        {
-          label: 'Away',
-          value: 'orange',
-          icon: 'schedule',
-          color: 'blue',
-        }
+      {
+        label: 'Online',
+        value: 'positive',
+        icon: 'wifi',
+        color: 'secondary',
+      },
+      {
+        label: 'Offline',
+        value: 'negative',
+        icon: 'notifications_off',
+        color: 'secondary',
+      },
+      {
+        label: 'DND',
+        value: 'secondary',
+        icon: 'schedule',
+        color: 'secondary',
+      },
     ];
     return {
       userStore: useUserStore(),
       $q: useQuasar(),
       selected: 'a',
       options,
-      status: 'green' 
+      status: 'positive',
     };
   },
   props: {
@@ -111,7 +105,6 @@ export default defineComponent({
     toggleDarkMode() {
       this.$q.dark.toggle();
     },
-
   },
 });
 </script>
