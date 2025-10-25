@@ -3,13 +3,21 @@
     <div class="row items-center bg-secondary q-pa-sm">
       <div class="col text-subtitle text-weight-medium text-white flex items-center">
         {{ channel?.name }}
-        <q-badge v-if="channel?.isAdmin" class="q-ml-xs" outline color="warning" label="Admin" />
+        <q-badge
+          v-if="channel?.isAdmin"
+          class="q-ml-xs gt-xs"
+          outline
+          color="warning"
+          label="Admin"
+        />
       </div>
       <div class="col text-center">
         <q-chip v-if="channel?.isPublic" icon="lock_open" :clickable="false" :ripple="false">
-          Public
+          Pu<span class="gt-xs">blic</span>
         </q-chip>
-        <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
+        <q-chip v-else icon="lock" :clickable="false" :ripple="false">
+          Pr<span class="gt-xs">ivate</span>
+        </q-chip>
       </div>
       <div class="col text-right">
         <q-btn
@@ -22,7 +30,7 @@
           aria-label="Leave channel"
           @click="leaveChannelDialogOpen = !leaveChannelDialogOpen"
         >
-          <q-tooltip anchor="top left">Leave channel</q-tooltip>
+          <q-tooltip class="gt-xs" anchor="top left">Leave channel</q-tooltip>
         </q-btn>
         <q-btn
           v-if="channel?.isAdmin"
@@ -34,13 +42,13 @@
           aria-label="Channel settings"
           @click="adminOptionsDialogOpen = !adminOptionsDialogOpen"
         >
-          <q-tooltip anchor="top left">Channel settings</q-tooltip>
+          <q-tooltip class="gt-xs" anchor="top left">Channel settings</q-tooltip>
         </q-btn>
       </div>
     </div>
 
     <q-dialog v-model="adminOptionsDialogOpen" persistent>
-      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+      <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
         <q-card-section>
           <div class="row justify-center items-center text-weight-bold">
@@ -94,7 +102,7 @@
     </q-dialog>
 
     <q-dialog v-model="leaveChannelDialogOpen" persistent>
-      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+      <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-weight-regular"
           >Are you sure you want to leave this channel?</q-card-section
         >
@@ -148,7 +156,7 @@
       </div>
     </q-scroll-area>
 
-    <div v-else class="flex column justify-center items-center col" style="flex: 1">
+    <div v-else class="flex column justify-center items-center col q-ma-sm" style="flex: 1">
       <q-icon name="groups" size="64px" color="primary" />
       <div class="text-h4 q-my-md text-weight-medium">
         You have been invited to <span class="text-primary">{{ channel.name }}</span>

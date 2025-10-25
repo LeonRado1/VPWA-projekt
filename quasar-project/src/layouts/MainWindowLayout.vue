@@ -57,7 +57,7 @@
     </q-dialog>
 
     <q-dialog v-model="channelDialogOpen" persistent>
-      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+      <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-secondary">Create New Channel</q-card-section>
 
         <q-card-section>

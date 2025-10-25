@@ -24,20 +24,38 @@
               </div>
               <q-btn-toggle
                 v-model="status"
+                :dense="$q.screen.lt.sm"
                 spread
                 toggle-color="primary"
                 unelevated
                 size="sm"
                 :options="options"
-                class="status-toggle column q-gutter-md"
+                class="status-toggle column q-gutter-sm"
               />
             </div>
           </q-menu>
         </q-btn>
       </div>
 
-      <span class="q-ml-sm text-weight-medium">{{ userStore.user?.email }}</span>
-      <q-btn icon="logout" size="12px" class="q-mx-md" @click="logout" outline label="Logout" />
+      <span class="q-ml-sm text-weight-medium gt-xs">{{ userStore.user?.email }}</span>
+      <q-btn
+        v-if="$q.screen.gt.sm || $q.screen.sm"
+        icon="logout"
+        size="12px"
+        class="q-mx-md"
+        @click="logout"
+        outline
+        label="Logout"
+      />
+      <q-btn
+        v-if="$q.screen.lt.sm"
+        icon="logout"
+        size="12px"
+        class="q-mx-xs lt-xs"
+        @click="logout"
+        flat
+        round
+      />
       <q-btn
         flat
         round

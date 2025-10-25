@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed-top-right q-pa-md" style="z-index: 100">
+  <div class="fixed-top-right q-pa-md gt-xs" style="z-index: 100">
     <q-btn
       flat
       round
@@ -10,7 +10,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <q-page class="flex flex-center q-my-xl">
-        <q-card class="q-pa-md shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card class="q-pa-md shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
           <div class="flex flex-center q-my-lg">
             <img
               style="max-width: 15rem"
