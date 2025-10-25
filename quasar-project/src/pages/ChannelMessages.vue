@@ -16,7 +16,7 @@
           <q-tooltip anchor="top middle">Leave channel</q-tooltip>
         </q-btn>
         <q-btn v-if="channel?.isAdmin" flat round size="12px" icon="more_vert" color="white" aria-label="Channel settings" @click="adminOptionsDialogOpen = !adminOptionsDialogOpen">
-          <q-tooltip anchor="top middle">Channel settings (not implemented)</q-tooltip>
+          <q-tooltip anchor="top middle">Channel settings</q-tooltip>
         </q-btn>
       </div>
     </div>
@@ -38,6 +38,10 @@
                 keep-color
               />
               <span :class="{ 'text-primary': isPublic }">Public</span>
+            </div>
+            <div class="row justify-center items-center text-weight-bold">
+              <q-input v-model="userToAdd" label="Add new user" />
+              <q-btn flat label="Add" color="primary" @click="addUserToChannel" />
             </div>
           </q-card-actions>
         <q-card-actions align="right">
@@ -125,6 +129,7 @@ export default defineComponent({
       exampleMessages: <Message[]>([]),
       leaveChannelDialogOpen: false,
       adminOptionsDialogOpen: false,
+      userToAdd: '',
     };
   },
   methods: {
@@ -160,7 +165,20 @@ export default defineComponent({
         const max = scrollEl.scrollHeight
         el.setScrollPosition('vertical', max, 300)
   }
-}
+
+  },
+    addUserToChannel() {
+      const name = this.userToAdd.trim();
+      if (name === '') {
+        return;
+      }
+      this.$q.notify({
+        color: 'positive',
+        icon: 'send',
+        message: `Invitation sent to ${name}`
+      });
+      this.userToAdd = '';
+    }
   },
   watch: {
     '$route.params.id': {
