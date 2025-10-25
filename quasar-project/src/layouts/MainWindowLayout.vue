@@ -13,7 +13,7 @@
         </div>
         <q-separator />
         <div class="row gap-2 q-mt-md">
-          <q-btn flat round size="sm" class="q-mr-sm" icon="settings" />
+          <q-btn flat round size="sm" class="q-mr-sm" icon="settings" @click="openSettings = !openSettings" />
           <q-btn
             @click="channelDialogOpen = !channelDialogOpen"
             flat
@@ -24,6 +24,32 @@
         </div>
       </div>
     </q-drawer>
+
+    <q-dialog v-model="openSettings" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Settings</q-card-section>
+        <q-separator />
+        <q-card-section>
+           <div class="flex justify-center items-center text-weight-bold">
+            <span>Notifications</span>
+            <span :class="{ 'text-primary': !NotificationSwitch }"></span>
+            <q-toggle
+              v-model="NotificationSwitch"
+              color="primary"
+              keep-color
+            />
+            <span :class="{ 'text-primary': NotificationSwitch }"></span>
+          </div>
+          <div>
+            <span>Status</span>
+
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-dialog v-model="channelDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
@@ -89,6 +115,8 @@ export default defineComponent({
       channelDialogOpen: false,
       newChannelName: '',
       newChannelIsPublic: false,
+      openSettings: false,
+      NotificationSwitch: false,
     };
   },
   methods: {
@@ -115,11 +143,3 @@ export default defineComponent({
 });
 </script>
 
-<!-- 
-    id: '13',
-    name: 'General',
-    lastMessage: 'Welcome to the team, everyone!',
-    lastActivity: new Date('2025-10-20T02:10:00'),
-    isPublic: true,
-    isInvite: false,
-    isAdmin: true, -->

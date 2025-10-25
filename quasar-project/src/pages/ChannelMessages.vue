@@ -15,8 +15,27 @@
         <q-btn flat round size="12px" icon="exit_to_app" color="white" aria-label="Leave channel" @click="leaveChannelDialogOpen = !leaveChannelDialogOpen">
           <q-tooltip anchor="top middle">Leave channel</q-tooltip>
         </q-btn>
+        <q-btn v-if="channel?.isAdmin" flat round size="12px" icon="more_vert" color="white" aria-label="Channel settings" @click="adminOptionsDialogOpen = !adminOptionsDialogOpen">
+          <q-tooltip anchor="top middle">Channel settings (not implemented)</q-tooltip>
+        </q-btn>
       </div>
     </div>
+
+    <q-dialog v-model="adminOptionsDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
+        <q-separator />
+          <q-card-actions>
+            <q-btn flat label="Delete Channel" color="negative" @click="leaveChannel" />
+            <q-btn flat label="Leave Channel" color="primary" @click="leaveChannel"  />
+          </q-card-actions>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
     <q-dialog v-model="leaveChannelDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
         <q-card-section class="text-h6 text-secondary">Are you sure you want to leave this channel?</q-card-section>
@@ -90,8 +109,9 @@ export default defineComponent({
     return {
       exampleChannels: channels,
       channel: null as Channel | null,
-      exampleMessages: [] as Message[],
+      exampleMessages: <Message[]>([]),
       leaveChannelDialogOpen: false,
+      adminOptionsDialogOpen: false,
     };
   },
   methods: {
@@ -102,7 +122,7 @@ export default defineComponent({
       }
     },
     loadMessages() {
-      this.exampleMessages = messages;
+      this.exampleMessages = messages.value;
     },
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
