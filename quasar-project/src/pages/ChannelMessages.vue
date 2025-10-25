@@ -12,11 +12,57 @@
         <q-chip v-else icon="lock" :clickable="false" :ripple="false">Private</q-chip>
       </div>
       <div class="col text-right">
-        <q-btn flat round size="12px" icon="more_vert" color="white" />
+        <q-btn flat round size="12px" icon="exit_to_app" color="white" aria-label="Leave channel" @click="leaveChannelDialogOpen = !leaveChannelDialogOpen">
+          <q-tooltip anchor="top middle">Leave channel</q-tooltip>
+        </q-btn>
+        <q-btn v-if="channel?.isAdmin" flat round size="12px" icon="more_vert" color="white" aria-label="Channel settings" @click="adminOptionsDialogOpen = !adminOptionsDialogOpen">
+          <q-tooltip anchor="top middle">Channel settings</q-tooltip>
+        </q-btn>
       </div>
     </div>
 
-    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
+    <q-dialog v-model="adminOptionsDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
+        <q-separator />
+          <q-card-actions class="column">
+            <q-btn flat label="Delete Channel" color="negative" @click="leaveChannel" />
+            <q-btn flat label="Leave Channel" color="primary" @click="leaveChannel"  />
+            <div class="row justify-center items-center text-weight-bold">
+              <span :class="{ 'text-primary': !isPublic }">Private</span>
+              <q-toggle
+                v-model="isPublic"
+                color="primary"
+                checked-icon="lock_open"
+                unchecked-icon="lock"
+                keep-color
+              />
+              <span :class="{ 'text-primary': isPublic }">Public</span>
+            </div>
+            <div class="row justify-center items-center text-weight-bold">
+              <q-input v-model="userToAdd" label="Add new user" />
+              <q-btn flat label="Add" color="primary" @click="addUserToChannel" />
+            </div>
+          </q-card-actions>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="leaveChannelDialogOpen" persistent>
+      <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
+        <q-card-section class="text-h6 text-secondary">Are you sure you want to leave this channel?</q-card-section>
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn unelevated class="q-mr-xs" label="Leave" color="primary" @click="leaveChannel" />
+          <q-btn flat label="Cancel" color="secondary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
       <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
         <q-chat-message
           :class="{ 'q-mt-md': i == 0 }"
@@ -24,6 +70,7 @@
           :sent="msg.isOwn"
           :name="msg.sender"
           :stamp="calculateTimeAgo(msg.sentAt)"
+
         >
           <template v-slot:avatar v-if="!msg.isOwn">
             <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
@@ -60,25 +107,29 @@
       </div>
     </div>
 
-    <MessageField />
+    <MessageField @message-added="scrollToBottom"/>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick  } from 'vue';
 import MessageField from 'components/MessageField.vue';
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
 import { channels, messages } from 'src/misc/data';
 import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
-
+import { leaveChannelById } from 'src/misc/data';
+import  { type QScrollArea } from 'quasar'
 export default defineComponent({
   components: { MessageField },
   data() {
     return {
       exampleChannels: channels,
       channel: null as Channel | null,
-      exampleMessages: [] as Message[],
+      exampleMessages: <Message[]>([]),
+      leaveChannelDialogOpen: false,
+      adminOptionsDialogOpen: false,
+      userToAdd: '',
     };
   },
   methods: {
@@ -89,19 +140,58 @@ export default defineComponent({
       }
     },
     loadMessages() {
-      this.exampleMessages = messages;
+      this.exampleMessages = messages.value;
     },
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
     },
+    async leaveChannel() {
+      if (this.channel) {
+        leaveChannelById(this.channel.id);
+        await this.$router.push('/');
+      }
+    },
+    changeChannelVisibility() {
+      if (this.channel) {
+        this.channel.isPublic = !this.channel.isPublic;
+      }
+    },
+    scrollToBottom() {
+      const el = this.$refs.scrollArea as QScrollArea | undefined
+      if (!el) return
+
+      const scrollEl = el.getScrollTarget() 
+      if (scrollEl) {
+        const max = scrollEl.scrollHeight
+        el.setScrollPosition('vertical', max, 300)
+  }
+
+  },
+    addUserToChannel() {
+      const name = this.userToAdd.trim();
+      if (name === '') {
+        return;
+      }
+      this.$q.notify({
+        color: 'positive',
+        icon: 'send',
+        message: `Invitation sent to ${name}`
+      });
+      this.userToAdd = '';
+    }
   },
   watch: {
     '$route.params.id': {
-      handler(newId) {
+      async handler(newId) {
         this.loadChannel(newId);
+        await nextTick();
+        this.scrollToBottom()
+        
       },
       immediate: true,
     },
+    
+    
   },
   computed: {
     tokenizedMessages() {
@@ -110,6 +200,14 @@ export default defineComponent({
         tokens: tokenizeMessage(x),
       }));
     },
+    isPublic: {
+    get() {
+      return this.channel?.isPublic ?? false
+    },
+    set(val: boolean) {
+      if (this.channel) this.channel.isPublic = val
+    }
+  }
   },
   mounted() {
     const id = this.$route.params.id as string;

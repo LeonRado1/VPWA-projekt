@@ -1,7 +1,7 @@
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
-
-export const channels: Channel[] = [
+import { ref } from 'vue';
+export const channels = ref<Channel[]>([
   {
     id: '1',
     name: 'General',
@@ -137,9 +137,9 @@ export const channels: Channel[] = [
     isInvite: false,
     isAdmin: false,
   },
-];
+]);
 
-export const messages: Message[] = [
+export const messages = ref<Message[]>([
   {
     id: '1',
     message: 'Hey team, just pushed the latest update!',
@@ -220,4 +220,16 @@ export const messages: Message[] = [
     isOwn: false,
     sentAt: new Date(),
   },
-];
+]);
+
+export function leaveChannelById(channelId: string): void {
+  channels.value = channels.value.filter(ch => ch.id !== channelId)
+}
+
+export function addChannel(newChannel: Channel): void {
+  channels.value.push(newChannel);
+}
+
+export function addMessage(message: Message): void {
+  messages.value.push(message);
+}
