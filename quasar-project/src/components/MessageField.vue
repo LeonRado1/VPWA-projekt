@@ -39,6 +39,7 @@ export default defineComponent({
       };
       addMessage(message);
         this.newMessage = '';
+        this.$emit('message-added', message);
     },
   },
 });

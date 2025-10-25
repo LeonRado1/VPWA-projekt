@@ -25,9 +25,20 @@
       <q-card class="shadow-1 rounded-xl" style="min-width: 400px">
         <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
         <q-separator />
-          <q-card-actions>
+          <q-card-actions class="column">
             <q-btn flat label="Delete Channel" color="negative" @click="leaveChannel" />
             <q-btn flat label="Leave Channel" color="primary" @click="leaveChannel"  />
+            <div class="row justify-center items-center text-weight-bold">
+              <span :class="{ 'text-primary': !isPublic }">Private</span>
+              <q-toggle
+                v-model="isPublic"
+                color="primary"
+                checked-icon="lock_open"
+                unchecked-icon="lock"
+                keep-color
+              />
+              <span :class="{ 'text-primary': isPublic }">Public</span>
+            </div>
           </q-card-actions>
         <q-card-actions align="right">
           <q-btn flat label="Close" color="secondary" v-close-popup />
@@ -47,7 +58,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm">
+    <q-scroll-area v-if="!channel?.isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
       <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
         <q-chat-message
           :class="{ 'q-mt-md': i == 0 }"
@@ -55,6 +66,7 @@
           :sent="msg.isOwn"
           :name="msg.sender"
           :stamp="calculateTimeAgo(msg.sentAt)"
+
         >
           <template v-slot:avatar v-if="!msg.isOwn">
             <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
@@ -91,18 +103,19 @@
       </div>
     </div>
 
-    <MessageField />
+    <MessageField @message-added="scrollToBottom"/>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick  } from 'vue';
 import MessageField from 'components/MessageField.vue';
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
 import { channels, messages } from 'src/misc/data';
 import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
 import { leaveChannelById } from 'src/misc/data';
+import  { type QScrollArea } from 'quasar'
 export default defineComponent({
   components: { MessageField },
   data() {
@@ -133,14 +146,34 @@ export default defineComponent({
         await this.$router.push('/');
       }
     },
+    changeChannelVisibility() {
+      if (this.channel) {
+        this.channel.isPublic = !this.channel.isPublic;
+      }
+    },
+    scrollToBottom() {
+      const el = this.$refs.scrollArea as QScrollArea | undefined
+      if (!el) return
+
+      const scrollEl = el.getScrollTarget() 
+      if (scrollEl) {
+        const max = scrollEl.scrollHeight
+        el.setScrollPosition('vertical', max, 300)
+  }
+}
   },
   watch: {
     '$route.params.id': {
-      handler(newId) {
+      async handler(newId) {
         this.loadChannel(newId);
+        await nextTick();
+        this.scrollToBottom()
+        
       },
       immediate: true,
     },
+    
+    
   },
   computed: {
     tokenizedMessages() {
@@ -149,6 +182,14 @@ export default defineComponent({
         tokens: tokenizeMessage(x),
       }));
     },
+    isPublic: {
+    get() {
+      return this.channel?.isPublic ?? false
+    },
+    set(val: boolean) {
+      if (this.channel) this.channel.isPublic = val
+    }
+  }
   },
   mounted() {
     const id = this.$route.params.id as string;
