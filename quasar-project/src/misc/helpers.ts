@@ -46,6 +46,7 @@ export function calculateTimeAgo(date: Date) {
 
 export function tokenizeMessage(msg: Message): MessageToken[] {
   const tokens: MessageToken[] = [];
+
   const parts = msg.message.split(/(@\w+)/g);
   const mentions = msg.mentions.map((m) => m.toLowerCase());
 

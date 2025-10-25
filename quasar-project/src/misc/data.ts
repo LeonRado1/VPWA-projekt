@@ -1,6 +1,8 @@
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
+import { type User } from 'src/types/user';
 import { ref } from 'vue';
+
 export const channels = ref<Channel[]>([
   {
     id: '1',
@@ -222,8 +224,27 @@ export const messages = ref<Message[]>([
   },
 ]);
 
+export const users = ref<User[]>([
+  {
+    nickname: 'alex',
+    email: 'alex@example.com',
+  },
+  {
+    nickname: 'jordan',
+    email: 'jordan@example.com',
+  },
+  {
+    nickname: 'maria',
+    email: 'maria@example.com',
+  },
+  {
+    nickname: 'dev_team',
+    email: 'dev_team@example.com',
+  },
+]);
+
 export function leaveChannelById(channelId: string): void {
-  channels.value = channels.value.filter(ch => ch.id !== channelId)
+  channels.value = channels.value.filter((ch) => ch.id !== channelId);
 }
 
 export function addChannel(newChannel: Channel): void {
@@ -232,4 +253,8 @@ export function addChannel(newChannel: Channel): void {
 
 export function addMessage(message: Message): void {
   messages.value.push(message);
+}
+
+export function addUser(user: User): void {
+  users.value.push(user);
 }

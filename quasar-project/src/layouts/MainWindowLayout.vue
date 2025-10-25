@@ -13,7 +13,14 @@
         </div>
         <q-separator />
         <div class="row gap-2 q-mt-md">
-          <q-btn flat round size="sm" class="q-mr-sm" icon="settings" @click="openSettings = !openSettings" />
+          <q-btn
+            flat
+            round
+            size="sm"
+            class="q-mr-sm"
+            icon="settings"
+            @click="openSettings = !openSettings"
+          />
           <q-btn
             @click="channelDialogOpen = !channelDialogOpen"
             flat
@@ -30,19 +37,13 @@
         <q-card-section class="text-h6 text-secondary">Settings</q-card-section>
         <q-separator />
         <q-card-section>
-           <div class="flex justify-center items-center text-weight-bold">
+          <div class="flex justify-center items-center text-weight-bold">
             <span>Notifications</span>
             <span :class="{ 'text-primary': !NotificationSwitch }"></span>
-            <q-toggle
-              v-model="NotificationSwitch"
-              color="primary"
-              keep-color
-            />
+            <q-toggle v-model="NotificationSwitch" color="primary" keep-color />
             <span :class="{ 'text-primary': NotificationSwitch }"></span>
           </div>
-          <div>
-
-          </div>
+          <div></div>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Close" color="secondary" v-close-popup />
@@ -84,7 +85,7 @@
         <q-separator />
 
         <q-card-actions align="right">
-          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" @click="createChannel()"/>
+          <q-btn unelevated class="q-mr-xs" label="Add" color="primary" @click="createChannel()" />
           <q-btn flat label="Cancel" color="secondary" v-close-popup />
         </q-card-actions>
       </q-card>
@@ -131,7 +132,6 @@ export default defineComponent({
         isPublic: this.newChannelIsPublic,
         isInvite: false,
         isAdmin: true,
-
       };
       addChannel(newChannel);
       this.newChannelName = '';
@@ -141,4 +141,3 @@ export default defineComponent({
   },
 });
 </script>
-
