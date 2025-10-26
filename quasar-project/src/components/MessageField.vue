@@ -35,6 +35,7 @@ export default defineComponent({
   data() {
     return {
       newMessage: '',
+          
     };
   },
   props: {
@@ -51,6 +52,7 @@ export default defineComponent({
       this.newMessage = '';
       this.$emit('message-added');
     },
+
     async constructMessage() {
       if (this.commands.length) {
         switch (this.commands[0]) {

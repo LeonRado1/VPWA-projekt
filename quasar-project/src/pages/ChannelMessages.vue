@@ -154,7 +154,20 @@
           </div>
         </q-chat-message>
       </div>
+
+      <div v-if="typingUser" class="text-primary q-mt-sm">
+        {{ typingUser }} is typing...
+        <q-btn flat size="sm" :label="showPreview ? 'Close' : 'View live'" @click="showPreview = !showPreview" />
+      </div>
+
+      <q-chip v-if="showPreview && (scrollToBottom(), true)" class="q-pa-sm q-mt-sm bg-grey-2">
+        <div class="text-caption text-secondary">{{ typingUser }}'s draft:</div>
+        <div class="text-primary">{{ liveDraft }}</div>
+      </q-chip>
+
+
     </q-scroll-area>
+
 
     <div v-else class="flex column justify-center items-center col q-ma-sm" style="flex: 1">
       <q-icon name="groups" size="64px" color="primary" />
@@ -168,7 +181,7 @@
       </div>
     </div>
 
-    <MessageField :channel="channel" @message-added="scrollToBottom" />
+    <MessageField :channel="channel" @message-added="onmessageAdded" />
   </q-page>
 </template>
 
@@ -181,7 +194,7 @@ import { acceptChannelById, addUser, channels, messages, users } from 'src/misc/
 import { calculateTimeAgo, tokenizeMessage } from 'src/misc/helpers';
 import { leaveChannelById } from 'src/misc/data';
 import { type QScrollArea } from 'quasar';
-
+import { addMessage } from 'src/misc/data';
 export default defineComponent({
   components: { MessageField },
   data() {
@@ -192,6 +205,9 @@ export default defineComponent({
       leaveChannelDialogOpen: false,
       adminOptionsDialogOpen: false,
       userToAdd: '',
+      typingUser: null as string | null, 
+      liveDraft: '',                    
+      showPreview: false,  
     };
   },
   methods: {
@@ -226,6 +242,7 @@ export default defineComponent({
       }
     },
     scrollToBottom() {
+
       const el = this.$refs.scrollArea as QScrollArea | undefined;
       if (!el) return;
 
@@ -235,6 +252,10 @@ export default defineComponent({
         el.setScrollPosition('vertical', max, 300);
       }
     },
+    onmessageAdded() {
+      this.scrollToBottom();
+      this.simulateTyping();
+    },
     addUserToChannel() {
       const name = this.userToAdd.trim();
       if (name === '') {
@@ -242,6 +263,32 @@ export default defineComponent({
       }
       addUser({ email: '', nickname: name });
       this.userToAdd = '';
+    },
+        simulateTyping() {
+      this.typingUser = 'Ed';
+      this.liveDraft = 'I';
+      const response = 'I personally think that VPWA is a great subject. I love building UIs with Quasar and creating awesome applications! I want to get an A in this course.';
+      let index = 0;
+      const typingInterval = setInterval(() => {
+        this.liveDraft = response.slice(0, index);
+        index++;
+        if (index > response.length) {
+            clearInterval(typingInterval);
+            addMessage({
+              id: Date.now().toString(),
+              message: this.liveDraft,
+              mentions: [],
+              sender: this.typingUser? 'Ed' : '',
+              isOwn: false,
+              sentAt: new Date(),
+            });
+            this.scrollToBottom();
+            this.typingUser = null;
+            this.liveDraft = '';
+            this.showPreview = false;
+          }
+        }, 100);
+
     },
   },
   watch: {
