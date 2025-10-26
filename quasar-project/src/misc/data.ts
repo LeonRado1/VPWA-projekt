@@ -256,6 +256,8 @@ export function addChannel(newChannel: Channel): void {
 
 export function addMessage(message: Message): void {
   messages.value.push(message);
+
+  
 }
 
 export function addUser(user: User): void {
