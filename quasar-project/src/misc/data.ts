@@ -1,6 +1,9 @@
 import { type Channel } from 'src/types/channel';
 import { type Message } from 'src/types/message';
+import { type User } from 'src/types/user';
 import { ref } from 'vue';
+import { notify } from 'src/misc/helpers';
+
 export const channels = ref<Channel[]>([
   {
     id: '1',
@@ -222,14 +225,45 @@ export const messages = ref<Message[]>([
   },
 ]);
 
+export const users = ref<User[]>([
+  {
+    nickname: 'alex',
+    email: 'alex@example.com',
+  },
+  {
+    nickname: 'jordan',
+    email: 'jordan@example.com',
+  },
+  {
+    nickname: 'maria',
+    email: 'maria@example.com',
+  },
+  {
+    nickname: 'dev_team',
+    email: 'dev_team@example.com',
+  },
+]);
+
 export function leaveChannelById(channelId: string): void {
-  channels.value = channels.value.filter(ch => ch.id !== channelId)
+  channels.value = channels.value.filter((ch) => ch.id !== channelId);
+  notify('Channel was left successfully.', false);
 }
 
 export function addChannel(newChannel: Channel): void {
   channels.value.push(newChannel);
+  notify('Channel was added successfully.', false);
 }
 
 export function addMessage(message: Message): void {
   messages.value.push(message);
+}
+
+export function addUser(user: User): void {
+  users.value.push(user);
+  notify('User was added successfully.', false);
+}
+
+export function acceptChannelById(channelId: string): void {
+  channels.value.find((ch) => ch.id === channelId)!.isInvite = false;
+  notify('Invite was accepted successfully.', false);
 }
