@@ -155,14 +155,14 @@
         </q-chat-message>
       </div>
 
-      <div v-if="typingUser" class="text-grey q-mt-sm">
+      <div v-if="typingUser" class="text-primary q-mt-sm">
         {{ typingUser }} is typing...
         <q-btn flat size="sm" :label="showPreview ? 'Close' : 'View live'" @click="showPreview = !showPreview" />
       </div>
 
       <q-chip v-if="showPreview && (scrollToBottom(), true)" class="q-pa-sm q-mt-sm bg-grey-2">
-        <div class="text-caption text-grey-8">{{ typingUser }}'s draft:</div>
-        <div class="text-body1">{{ liveDraft }}</div>
+        <div class="text-caption text-secondary">{{ typingUser }}'s draft:</div>
+        <div class="text-primary">{{ liveDraft }}</div>
       </q-chip>
 
 
