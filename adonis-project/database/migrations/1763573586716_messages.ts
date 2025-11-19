@@ -1,22 +1,26 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'api_tokens'
+  protected tableName = 'messages'
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id').primary()
+      table.uuid('id').primary()
+      table
+        .uuid('channel_id')
+        .notNullable()
+        .references('id')
+        .inTable('channels')
+        .onDelete('CASCADE')
       table
         .integer('user_id')
         .unsigned()
+        .notNullable()
         .references('id')
         .inTable('users')
         .onDelete('CASCADE')
-      table.string('name').notNullable()
-      table.string('type').notNullable()
-      table.string('token', 64).notNullable().unique()
-      table.timestamp('expires_at', { useTz: true }).nullable()
-      table.timestamp('created_at', { useTz: true }).notNullable()
+      table.text('content').notNullable()
+      table.timestamp('sent_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 
