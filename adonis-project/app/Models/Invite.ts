@@ -20,17 +20,17 @@ export default class Invite extends BaseModel {
   public invitedAt: DateTime
 
   @belongsTo(() => Channel, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public channel: BelongsTo<typeof Channel>
 
   @belongsTo(() => User, {
-    foreignKey: 'by_user_id',
+    foreignKey: 'byUserId',
   })
   public byUser: BelongsTo<typeof User>
 
   @belongsTo(() => User, {
-    foreignKey: 'for_user_id',
+    foreignKey: 'forUserId',
   })
   public forUser: BelongsTo<typeof User>
 }

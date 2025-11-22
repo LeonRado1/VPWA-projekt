@@ -1,5 +1,6 @@
 import { Notify } from 'quasar';
 import { type Message } from 'src/types/message';
+import axios from 'axios';
 
 export interface MessageToken {
   type: 'mention' | 'text';
@@ -62,4 +63,32 @@ export function tokenizeMessage(msg: Message): MessageToken[] {
   }
 
   return tokens;
+}
+
+export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return (
+      error.response?.data?.message || error.response?.data?.errors?.[0].message || error.message
+    );
+  }
+  return 'Request Failed';
+}
+
+export function getUserStatus(statusId: 1 | 2 | 3) {
+  const statuses = {
+    1: {
+      value: 'positive',
+      status: 'Online',
+    },
+    2: {
+      value: 'negative',
+      status: 'Offline',
+    },
+    3: {
+      value: 'secondary',
+      status: 'DND',
+    },
+  };
+
+  return statuses[statusId];
 }

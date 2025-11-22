@@ -1,12 +1,12 @@
 <template>
-  <q-header>
+  <q-header v-if="authStore.isLoggedIn">
     <q-toolbar class="q-px-sm">
       <q-btn flat round dense icon="menu" class="q-mr-sm" @click="toggleSidebar()" />
       <img
         style="max-width: 7.5rem"
         alt="Threadly Logo"
         src="/logo-dark.svg"
-        @click="homePage"
+        @click="toHomePage"
         :style="{ cursor: 'pointer' }"
       />
       <q-space></q-space>
@@ -14,8 +14,8 @@
       <div>
         <q-btn flat round>
           <q-avatar color="secondary" size="md" text-color="white">
-            {{ userStore.user?.email[0] }}
-            <q-badge :color="status" rounded floating />
+            {{ initials }}
+            <q-badge :color="status.value" rounded floating />
           </q-avatar>
           <q-menu>
             <div class="column no-wrap q-pa-md">
@@ -23,7 +23,7 @@
                 <div class="text-h6 q-mb-md">Status</div>
               </div>
               <q-btn-toggle
-                v-model="status"
+                :model-value="status.value"
                 :dense="$q.screen.lt.sm"
                 spread
                 toggle-color="primary"
@@ -37,7 +37,7 @@
         </q-btn>
       </div>
 
-      <span class="q-ml-sm text-weight-medium gt-xs">{{ userStore.user?.email }}</span>
+      <span class="q-ml-sm text-weight-medium gt-xs">{{ nickname }}</span>
       <q-btn
         v-if="$q.screen.gt.sm || $q.screen.sm"
         icon="logout"
@@ -68,38 +68,31 @@
 </template>
 
 <script lang="ts">
-import { useUserStore } from 'stores/user';
 import { useQuasar } from 'quasar';
 import { defineComponent } from 'vue';
+import { useAuthStore } from 'stores/auth';
+import { getUserStatus, notify } from 'src/misc/helpers';
+import { logout } from 'src/services/authService';
+
+const options = [
+  {
+    label: 'Online',
+    value: 'positive',
+    icon: 'notifications_on',
+  },
+  {
+    label: 'DND',
+    value: 'secondary',
+    icon: 'notifications_off',
+  },
+];
 
 export default defineComponent({
   data() {
-    const options = [
-      {
-        label: 'Online',
-        value: 'positive',
-        icon: 'wifi',
-        color: 'secondary',
-      },
-      {
-        label: 'Offline',
-        value: 'negative',
-        icon: 'notifications_off',
-        color: 'secondary',
-      },
-      {
-        label: 'DND',
-        value: 'secondary',
-        icon: 'schedule',
-        color: 'secondary',
-      },
-    ];
     return {
-      userStore: useUserStore(),
+      authStore: useAuthStore(),
       $q: useQuasar(),
-      selected: 'a',
       options,
-      status: 'positive',
     };
   },
   props: {
@@ -111,10 +104,15 @@ export default defineComponent({
   emits: ['update:sidebarOpen'],
   methods: {
     async logout() {
-      this.userStore.setUser(null);
-      await this.$router.push('/auth');
+      const response = await logout();
+
+      if (response.success) {
+        await this.authStore.onLogout();
+      } else {
+        notify(response.message!, true);
+      }
     },
-    async homePage() {
+    async toHomePage() {
       await this.$router.push('/');
     },
     toggleSidebar() {
@@ -124,5 +122,22 @@ export default defineComponent({
       this.$q.dark.toggle();
     },
   },
+  computed: {
+    status() {
+      return getUserStatus(this.authStore.currentUser!.settings!.statusId);
+    },
+    initials() {
+      return this.authStore.currentUser!.firstName[0]! + this.authStore.currentUser!.lastName[0]!;
+    },
+    nickname() {
+      return this.authStore.currentUser!.nickname;
+    },
+  },
 });
 </script>
+
+<style scoped>
+::v-deep(.status-toggle .q-btn__content) {
+  justify-content: flex-start !important;
+}
+</style>

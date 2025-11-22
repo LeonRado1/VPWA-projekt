@@ -13,12 +13,12 @@ export default class Mention extends BaseModel {
   public userId: number
 
   @belongsTo(() => Message, {
-    foreignKey: 'message_id',
+    foreignKey: 'messageId',
   })
   public message: BelongsTo<typeof Message>
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 }

@@ -1,13 +1,13 @@
 import type { RouteRecordRaw } from 'vue-router';
-import { useUserStore } from 'src/stores/user';
+import { useAuthStore } from 'stores/auth';
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainWindowLayout.vue'),
     beforeEnter: (to, from, next) => {
-      const userStore = useUserStore();
-      if (!userStore.user) {
+      const authStore = useAuthStore();
+      if (!authStore.isLoggedIn) {
         next({ path: '/auth' });
       } else {
         next();
@@ -26,8 +26,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/AuthLayout.vue'),
     redirect: '/auth/login',
     beforeEnter: (to, from, next) => {
-      const userStore = useUserStore();
-      if (userStore.user) {
+      const authStore = useAuthStore();
+      if (authStore.isLoggedIn) {
         next({ path: '/' });
       } else {
         next();

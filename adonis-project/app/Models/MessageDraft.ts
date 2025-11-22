@@ -26,12 +26,12 @@ export default class MessageDraft extends BaseModel {
   }
 
   @belongsTo(() => Channel, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public channel: BelongsTo<typeof Channel>
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 }

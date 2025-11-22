@@ -16,12 +16,12 @@ export default class Setting extends BaseModel {
   public statusId: number
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 
   @belongsTo(() => Status, {
-    foreignKey: 'status_id',
+    foreignKey: 'statusId',
   })
   public status: BelongsTo<typeof Status>
 }

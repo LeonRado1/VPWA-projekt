@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon'
 import {BaseModel, beforeCreate, column, HasMany, hasMany, ManyToMany, manyToMany} from '@ioc:Adonis/Lucid/Orm'
 import {randomUUID} from "node:crypto";
-import ChannelMember from "App/Models/ChannelMember";
 import Message from "App/Models/Message";
 import Invite from "App/Models/Invite";
 import BanVote from "App/Models/BanVote";
@@ -37,22 +36,22 @@ export default class Channel extends BaseModel {
   public users: ManyToMany<typeof User>
 
   @hasMany(() => Message, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public messages: HasMany<typeof Message>
 
   @hasMany(() => MessageDraft, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public messageDrafts: HasMany<typeof MessageDraft>
 
   @hasMany(() => Invite, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public invites: HasMany<typeof Invite>
 
   @hasMany(() => BanVote, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public banVotes: HasMany<typeof BanVote>
 }

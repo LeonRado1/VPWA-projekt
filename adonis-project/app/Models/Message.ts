@@ -27,17 +27,17 @@ export default class Message extends BaseModel {
   }
 
   @belongsTo(() => Channel, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public channel: BelongsTo<typeof Channel>
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 
   @hasMany(() => Mention, {
-    foreignKey: 'message_id',
+    foreignKey: 'messageId',
   })
   public mentions: HasMany<typeof Mention>
 }

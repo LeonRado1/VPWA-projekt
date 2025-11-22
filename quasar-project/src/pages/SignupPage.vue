@@ -1,7 +1,7 @@
 <template>
   <q-form @submit.prevent="signup" class="q-gutter-sm q-my-lg q-pt-md text-center">
     <q-input
-      v-model="email"
+      v-model="form.email"
       filled
       dense
       label="Email"
@@ -17,15 +17,15 @@
       </template>
     </q-input>
     <q-input
-      v-model="fullName"
+      v-model="form.firstName"
       filled
       dense
-      label="Full Name"
+      label="First Name"
       type="text"
       lazy-rules
       :rules="[
         (val) => (val && val.length > 0) || 'This field is required',
-        (val) => /^[A-Za-z]+( [A-Za-z]+){1,2}$/.test(val) || 'Invalid name format',
+        (val) => /^[A-Z][a-zA-Z]*$/.test(val) || 'Invalid name format',
       ]"
     >
       <template v-slot:prepend>
@@ -33,7 +33,23 @@
       </template>
     </q-input>
     <q-input
-      v-model="nickname"
+      v-model="form.lastName"
+      filled
+      dense
+      label="Last Name"
+      type="text"
+      lazy-rules
+      :rules="[
+        (val) => (val && val.length > 0) || 'This field is required',
+        (val) => /^[A-Z][a-zA-Z]*$/.test(val) || 'Invalid name format',
+      ]"
+    >
+      <template v-slot:prepend>
+        <q-icon size="xs" name="person" />
+      </template>
+    </q-input>
+    <q-input
+      v-model="form.nickname"
       filled
       dense
       label="Nickname"
@@ -42,11 +58,11 @@
       :rules="[(val) => (val && val.length > 0) || 'This field is required']"
     >
       <template v-slot:prepend>
-        <q-icon size="xs" name="person" />
+        <q-icon size="xs" name="label" />
       </template>
     </q-input>
     <q-input
-      v-model="password"
+      v-model="form.password"
       filled
       dense
       label="Password"
@@ -54,7 +70,7 @@
       lazy-rules
       :rules="[
         (val) => (val && val.length > 0) || 'This field is required',
-        (val) => (val && val.length > 8) || 'Minimum 8 characters',
+        (val) => (val && val.length >= 8) || 'Minimum 8 characters',
       ]"
     >
       <template v-slot:prepend>
@@ -62,7 +78,7 @@
       </template>
     </q-input>
     <q-input
-      v-model="confirmPassword"
+      v-model="form.confirmPassword"
       filled
       dense
       label="Confirm Password"
@@ -70,7 +86,7 @@
       lazy-rules
       :rules="[
         (val) => (val && val.length > 0) || 'This field is required',
-        (val) => (val && val === password) || 'Passwords do not match',
+        (val) => (val && val === form.password) || 'Passwords do not match',
       ]"
     >
       <template v-slot:prepend>
@@ -92,55 +108,63 @@
 
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
-import { useUserStore } from 'src/stores/user';
 import { defineComponent } from 'vue';
+import type { RegisterPayload } from 'src/models/Auth';
+import { type AuthStoreType, useAuthStore } from 'stores/auth';
+import { register } from 'src/services/authService';
+
+interface SignupPageData {
+  form: RegisterPayload;
+  termsAccepted: boolean;
+  authStore: AuthStoreType;
+}
 
 export default defineComponent({
-  data() {
+  data(): SignupPageData {
     return {
-      email: '',
-      fullName: '',
-      nickname: '',
-      password: '',
-      confirmPassword: '',
+      form: {
+        firstName: '',
+        lastName: '',
+        nickname: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      },
       termsAccepted: false,
-      userStore: useUserStore(),
+      authStore: useAuthStore(),
     };
   },
   methods: {
     async signup() {
-      console.log(
-        this.email,
-        this.fullName,
-        this.nickname,
-        this.password,
-        this.confirmPassword,
-        this.termsAccepted,
-      );
-      if (this.email.length > 10) {
-        this.userStore.setUser({
-          email: this.email,
-        });
-        await this.$router.push('/');
+      const response = await register(this.form);
+
+      if (response.success) {
+        await this.authStore.onLogin(response.data!.token, response.data!.user);
       } else {
-        notify('Nickname is already in use', true);
+        notify(response.message!, true);
       }
     },
     isFormValid(): boolean {
       const emailPattern = /^\S+@\S+\.\S+$/;
-      const fullNamePattern = /^[A-Za-z]+( [A-Za-z]+){1,2}$/;
+      const namePattern = /^[A-Z][a-zA-Z]*$/;
 
       const isFilled = [
-        this.email,
-        this.fullName,
-        this.nickname,
-        this.password,
-        this.confirmPassword,
+        this.form.email,
+        this.form.firstName,
+        this.form.lastName,
+        this.form.nickname,
+        this.form.password,
+        this.form.confirmPassword,
         this.termsAccepted,
       ].every((val) => val);
 
-      const doPasswordsMatch = this.password === this.confirmPassword && this.password.length > 8;
-      const isFormatCorrect = emailPattern.test(this.email) && fullNamePattern.test(this.fullName);
+      const doPasswordsMatch =
+        this.form.password === this.form.confirmPassword && this.form.password.length >= 8;
+
+      const isFormatCorrect =
+        emailPattern.test(this.form.email) &&
+        namePattern.test(this.form.firstName) &&
+        namePattern.test(this.form.lastName);
 
       return isFilled && doPasswordsMatch && isFormatCorrect;
     },

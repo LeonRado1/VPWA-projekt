@@ -52,7 +52,7 @@ export default class User extends BaseModel {
   }
 
   @hasOne(() => Setting, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public settings: HasOne<typeof Setting>
 
@@ -67,41 +67,41 @@ export default class User extends BaseModel {
   public channels: ManyToMany<typeof Channel>
 
   @hasMany(() => Message, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public messages: HasMany<typeof Message>
 
   @hasMany(() => MessageDraft, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public messageDrafts: HasMany<typeof MessageDraft>
 
   @hasMany(() => Invite, {
     localKey: 'id',
-    foreignKey: 'by_user_id',
+    foreignKey: 'byUserId',
   })
   public invitesSent: HasMany<typeof Invite>
 
   @hasMany(() => Invite, {
     localKey: 'id',
-    foreignKey: 'for_user_id',
+    foreignKey: 'forUserId',
   })
   public invitesReceived: HasMany<typeof Invite>
 
   @hasMany(() => BanVote, {
     localKey: 'id',
-    foreignKey: 'by_user_id',
+    foreignKey: 'byUserId',
   })
   public banVotesCast: HasMany<typeof BanVote>
 
   @hasMany(() => BanVote, {
     localKey: 'id',
-    foreignKey: 'for_user_id',
+    foreignKey: 'forUserId',
   })
   public banVotesReceived: HasMany<typeof BanVote>
 
   @hasMany(() => Mention, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public mentions: HasMany<typeof Mention>
 }

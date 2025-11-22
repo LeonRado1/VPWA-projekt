@@ -20,12 +20,12 @@ export default class ChannelMember extends BaseModel {
   public isAdmin: boolean
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 
   @belongsTo(() => Channel, {
-    foreignKey: 'channel_id',
+    foreignKey: 'channelId',
   })
   public channel: BelongsTo<typeof Channel>
 }

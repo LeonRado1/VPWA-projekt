@@ -9,7 +9,7 @@ export default class Status extends BaseModel {
   public status: string
 
   @hasMany(() => Setting, {
-    foreignKey: 'status_id',
+    foreignKey: 'statusId',
   })
   public settings: HasMany<typeof Setting>
 }
