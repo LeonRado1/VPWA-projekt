@@ -1,7 +1,7 @@
 <template>
   <q-form @submit.prevent="login" class="q-gutter-sm q-my-lg q-pt-md text-center">
     <q-input
-      v-model="email"
+      v-model="form.email"
       filled
       dense
       label="Email"
@@ -17,7 +17,7 @@
       </template>
     </q-input>
     <q-input
-      v-model="password"
+      v-model="form.password"
       filled
       dense
       label="Password"
@@ -41,32 +41,41 @@
 
 <script lang="ts">
 import { notify } from 'src/misc/helpers';
-import { useUserStore } from 'src/stores/user';
 import { defineComponent } from 'vue';
+import { type LoginPayload } from 'src/models/Auth';
+import { login } from 'src/services/authService';
+import { type AuthStoreType, useAuthStore } from 'stores/auth';
+
+interface LoginPageData {
+  form: LoginPayload;
+  authStore: AuthStoreType;
+}
 
 export default defineComponent({
-  data() {
+  data(): LoginPageData {
     return {
-      email: '',
-      password: '',
-      userStore: useUserStore(),
+      form: {
+        email: '',
+        password: '',
+      },
+      authStore: useAuthStore(),
     };
   },
   methods: {
     async login() {
-      console.log(this.email, this.password);
-      if (this.email.length > 10) {
-        this.userStore.setUser({
-          email: this.email,
-        });
-        await this.$router.push('/');
+      const response = await login(this.form);
+
+      if (response.success) {
+        await this.authStore.onLogin(response.data!.token, response.data!.user);
       } else {
-        notify('Invalid login credentials', true);
+        notify(response.message!, true);
       }
     },
     isFormValid(): boolean {
       const pattern = /^\S+@\S+\.\S+$/;
-      return this.email.length > 0 && this.password.length > 0 && pattern.test(this.email);
+      return (
+        this.form.email.length > 0 && this.form.password.length > 0 && pattern.test(this.form.email)
+      );
     },
   },
 });

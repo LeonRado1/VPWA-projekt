@@ -5,7 +5,7 @@
 
       <div class="text-h4 text-secondary">Oops. Nothing here...</div>
 
-      <q-btn class="q-mt-xl bg-primary" to="/" label="Go Home" />
+      <q-btn class="q-mt-xl" color="primary" to="/" label="Go Home" />
     </div>
   </div>
 </template>

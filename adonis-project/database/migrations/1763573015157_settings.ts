@@ -1,7 +1,7 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'api_tokens'
+  protected tableName = 'settings'
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -9,14 +9,19 @@ export default class extends BaseSchema {
       table
         .integer('user_id')
         .unsigned()
+        .notNullable()
+        .unique()
         .references('id')
         .inTable('users')
         .onDelete('CASCADE')
-      table.string('name').notNullable()
-      table.string('type').notNullable()
-      table.string('token', 64).notNullable().unique()
-      table.timestamp('expires_at', { useTz: true }).nullable()
-      table.timestamp('created_at', { useTz: true }).notNullable()
+      table.boolean('only_addressed').notNullable().defaultTo(false)
+      table
+        .integer('status_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
+        .inTable('statuses')
+        .onDelete('NO ACTION')
     })
   }
 
