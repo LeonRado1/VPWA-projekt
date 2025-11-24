@@ -18,11 +18,16 @@
 |
 */
 
-import Route from "@ioc:Adonis/Core/Route";
+import Route from '@ioc:Adonis/Core/Route';
 
 Route.group(() => {
-  Route.post('/register', 'AuthController.register')
-  Route.post('/login', 'AuthController.login')
-  Route.post('/logout', 'AuthController.logout')
-  Route.get('/me', 'AuthController.me').middleware('auth')
-}).prefix('/auth')
+  Route.post('/register', 'AuthController.register');
+  Route.post('/login', 'AuthController.login');
+  Route.post('/logout', 'AuthController.logout');
+  Route.get('/me', 'AuthController.me').middleware('auth');
+}).prefix('/auth');
+
+Route.group(() => {
+  Route.get('/', 'ChannelsController.getChannels').middleware('auth');
+  Route.get('/:id', 'ChannelsController.getChannel').middleware('auth');
+}).prefix('/channels');

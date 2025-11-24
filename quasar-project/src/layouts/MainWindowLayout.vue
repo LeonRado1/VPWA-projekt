@@ -62,7 +62,7 @@
 
         <q-card-section>
           <q-input
-            v-model="newChannelName"
+            v-model="form.name"
             filled
             dense
             label="Channel Name"
@@ -75,15 +75,15 @@
             </template>
           </q-input>
           <div class="flex justify-center items-center text-weight-bold">
-            <span :class="{ 'text-primary': !newChannelIsPublic }">Private</span>
+            <span :class="{ 'text-primary': !form.isPublic }">Private</span>
             <q-toggle
-              v-model="newChannelIsPublic"
+              v-model="form.isPublic"
               color="primary"
               checked-icon="lock_open"
               unchecked-icon="lock"
               keep-color
             />
-            <span :class="{ 'text-primary': newChannelIsPublic }">Public</span>
+            <span :class="{ 'text-primary': form.isPublic }">Public</span>
           </div>
         </q-card-section>
 
@@ -106,43 +106,39 @@
 import { defineComponent } from 'vue';
 import AppNavbar from 'components/AppNavbar.vue';
 import ChannelsList from 'components/ChannelsList.vue';
-import { addChannel } from 'src/misc/data';
-import type { Channel } from 'src/types/channel';
+import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
+import { type ChannelPayload } from 'src/models/Channel';
+
+interface MainWindowLayoutState {
+  form: ChannelPayload;
+  channelsStore: ChannelsStoreType;
+  channelDialogOpen: boolean;
+  openSettings: boolean;
+  notificationSwitch: boolean;
+  sidebarOpen: boolean;
+}
+
 export default defineComponent({
   name: 'MainWindowLayout',
   components: {
     ChannelsList,
     AppNavbar,
   },
-  data() {
+  data(): MainWindowLayoutState {
     return {
-      sidebarOpen: true,
+      form: {
+        name: '',
+        isPublic: false,
+      },
+      channelsStore: useChannelsStore(),
       channelDialogOpen: false,
-      newChannelName: '',
-      newChannelIsPublic: false,
       openSettings: false,
       notificationSwitch: false,
+      sidebarOpen: true,
     };
   },
   methods: {
-    createChannel() {
-      if (this.newChannelName.trim() === '') {
-        return;
-      }
-      const newChannel: Channel = {
-        id: Date.now().toString(),
-        name: this.newChannelName,
-        lastMessage: 'Welcome to the team, everyone!',
-        lastActivity: new Date(),
-        isPublic: this.newChannelIsPublic,
-        isInvite: false,
-        isAdmin: true,
-      };
-      addChannel(newChannel);
-      this.newChannelName = '';
-      this.newChannelIsPublic = false;
-      this.channelDialogOpen = false;
-    },
+    async createChannel() {},
   },
 });
 </script>

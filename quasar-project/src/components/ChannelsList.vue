@@ -9,58 +9,89 @@
       class="q-px-sm"
     >
       <q-item-section>
-        <q-item-label lines="1" :class="channel.isInvite ? 'text-weight-medium' : null">
+        <q-item-label lines="1" :class="isInvite(channel) ? 'text-weight-medium' : null">
           {{ channel.name }}
         </q-item-label>
         <q-item-label caption lines="1">
-          <q-badge v-if="channel.isInvite" color="negative" label="Invite" />
-          <span v-else>{{ channel.lastMessage }}</span>
+          <q-badge v-if="isInvite(channel)" color="negative" label="Invite" />
+          <q-badge v-else-if="isNew(channel)" color="black" label="New" />
+          <span v-else>{{ lastMessage(channel) }}</span>
         </q-item-label>
       </q-item-section>
 
-      <q-item-section side>{{ calculateTimeAgo(channel.lastActivity) }}</q-item-section>
+      <q-item-section side>
+        {{ calculateTimeAgo(lastActivity(channel)) }}
+      </q-item-section>
     </q-item>
   </q-list>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { type Channel } from 'src/types/channel';
-import { calculateTimeAgo } from 'src/misc/helpers';
-import { channels } from 'src/misc/data';
+import { calculateTimeAgo, notify } from 'src/misc/helpers';
+import { type Channel } from 'src/models/Channel';
+import { useChannelsStore } from 'stores/channels';
+import { useSocketStore } from 'stores/socket';
+import { getChannels } from 'src/services/channelService';
 
 export default defineComponent({
   data() {
     return {
-      exampleChannels: channels,
+      channelsStore: useChannelsStore(),
+      socketStore: useSocketStore(),
     };
   },
   methods: {
     async openChannel(channelId: string) {
       const encoded = encodeURIComponent(channelId);
-      try {
-        await this.$router.push({ path: `/channels/${encoded}` });
-      } catch (err) {
-        console.error('Navigation error (openChannel):', err);
-      }
+      await this.$router.push({ path: `/channels/${encoded}` });
     },
-    calculateTimeAgo(date: Date) {
-      return calculateTimeAgo(date);
+    isNew(channel: Channel) {
+      return !channel.messages?.length;
+    },
+    isInvite(channel: Channel) {
+      return channel.invites?.length;
+    },
+    lastActivity(channel: Channel) {
+      return this.isInvite(channel)
+        ? channel.invites?.[0]?.invitedAt
+        : this.isNew(channel)
+          ? channel.createdAt
+          : channel.messages?.[0]?.sentAt;
+    },
+    lastMessage(channel: Channel) {
+      return channel.messages?.[0]?.content;
+    },
+    calculateTimeAgo(date?: string) {
+      return calculateTimeAgo(new Date(date ?? 0));
     },
   },
   computed: {
     channelsSorted(): Channel[] {
-      return [...this.exampleChannels].sort((a, b) => {
-        if (a.isInvite && !b.isInvite) {
+      console.log(this.channelsStore.channels);
+      return [...this.channelsStore.channels].sort((a, b) => {
+        if (this.isInvite(a) && !this.isInvite(b)) {
           return -1;
         }
-        if (!a.isInvite && b.isInvite) {
+        if (!this.isInvite(a) && this.isInvite(b)) {
           return 1;
         }
 
-        return b.lastActivity.getTime() - a.lastActivity.getTime();
+        return (
+          new Date(this.lastActivity(b) ?? 0).getTime() -
+          new Date(this.lastActivity(a) ?? 0).getTime()
+        );
       });
     },
+  },
+  async created() {
+    const response = await getChannels();
+
+    if (response.success) {
+      this.channelsStore.setChannels(response.data!);
+    } else {
+      notify(response.message!, true);
+    }
   },
 });
 </script>

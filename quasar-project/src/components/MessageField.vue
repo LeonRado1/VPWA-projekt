@@ -27,15 +27,16 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { addChannel, addMessage, addUser, leaveChannelById } from 'src/misc/data';
-import type { Message } from 'src/types/message';
-import { type Channel } from 'src/types/channel';
+import { useSocketStore } from 'stores/socket';
+import { useChannelsStore } from 'stores/channels';
+import type { Channel } from 'src/models/Channel';
 
 export default defineComponent({
   data() {
     return {
+      socketStore: useSocketStore(),
+      channelsStore: useChannelsStore(),
       newMessage: '',
-          
     };
   },
   props: {
@@ -57,20 +58,18 @@ export default defineComponent({
       if (this.commands.length) {
         switch (this.commands[0]) {
           case '/join': {
-            const newChannel: Channel = {
-              id: Date.now().toString(),
-              name: this.commands[1]!,
-              lastActivity: new Date(),
-              isPublic: this.commands.length === 2,
-              isInvite: false,
-              isAdmin: true,
-            };
-            addChannel(newChannel);
+            this.socketStore.ws?.emit('join:sent', this.commands[1]!, this.commands.length === 2);
+            //this.socketStore.emitSendJoin(this.commands[1]!, this.commands.length === 2);
             break;
           }
 
           case '/invite':
-            addUser({ email: '', nickname: this.commands[1]! });
+            this.socketStore.ws?.emit(
+              'invite:sent',
+              '32d26f45-1721-4774-8a21-5793060f9492',
+              'nest',
+            );
+            //this.socketStore.emitSendInvite('1f154fc2-757b-4ce5-b047-8483f4b4f3af', 'nest');
             break;
 
           case '/revoke':
@@ -79,32 +78,12 @@ export default defineComponent({
 
           case '/quit':
           case '/cancel':
-            leaveChannelById(this.channel!.id);
             await this.$router.push('/');
             break;
 
-          case '/list': {
-            const message: Message = {
-              id: Date.now().toString(),
-              message: this.channel!.users!.map((x) => '@' + x.nickname!).join(' '),
-              mentions: this.channel!.users!.map((x) => x.nickname!),
-              sender: 'system',
-              isOwn: true,
-              sentAt: new Date(),
-            };
-            addMessage(message);
-          }
+          case '/list':
+            break;
         }
-      } else {
-        const message: Message = {
-          id: Date.now().toString(),
-          message: this.newMessage.trim(),
-          mentions: this.mentions.map((x) => x.slice(1)),
-          sender: 'you',
-          isOwn: true,
-          sentAt: new Date(),
-        };
-        addMessage(message);
       }
     },
   },
@@ -116,6 +95,7 @@ export default defineComponent({
       const parts = text.split(/\s+/);
       const command = parts[0];
       const args = parts.slice(1);
+      console.log(parts);
 
       switch (command) {
         case '/join':
@@ -133,7 +113,7 @@ export default defineComponent({
         case '/invite':
         case '/revoke':
         case '/kick':
-          if (args.length === 1 && this.channel && !this.channel.isInvite) {
+          if (args.length === 1) {
             return parts;
           } else {
             return [];
@@ -142,7 +122,7 @@ export default defineComponent({
         case '/quit':
         case '/cancel':
         case '/list':
-          if (args.length === 0 && this.channel && !this.channel.isInvite) {
+          if (args.length === 0 && this.channel) {
             return parts;
           } else {
             return [];
@@ -154,12 +134,12 @@ export default defineComponent({
     },
     mentions() {
       const text = this.newMessage.trim();
-      if (text.startsWith('/') || !this.channel || this.channel.isInvite) return [];
+      //if (text.startsWith('/') || !this.channel || this.channel.isInvite) return [];
 
       const parts = text.split(/\s+/);
       const mentions = parts.filter((x) => x.startsWith('@'));
 
-      const users = this.channel.users?.map((x) => '@' + x.nickname) ?? [];
+      const users = this.channel?.users?.map((x) => '@' + x.nickname) ?? [];
       return mentions.filter((x) => users.includes(x));
     },
   },
