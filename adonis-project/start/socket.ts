@@ -20,5 +20,6 @@ Ws.namespace('/ws')
   .on('cancel:sent', 'WsChannelsController.onChannelCancel')
   .on('invite:accept', 'WsChannelsController.onInviteAccept')
   .on('invite:reject', 'WsChannelsController.onInviteReject')
+  
   .on('message:join', 'MessagesController.onJoin')
   .on('message:send', 'MessagesController.onSend');

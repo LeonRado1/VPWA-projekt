@@ -110,64 +110,7 @@
     </q-dialog>
 
     <q-scroll-area v-if="!isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
-      <!--
-          <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
-            <q-chat-message
-              :class="{ 'q-mt-md': i == 0 }"
-              class="q-pr-sm"
-              :sent="msg.isOwn"
-              :name="msg.sender"
-              :stamp="calculateTimeAgo(msg.sentAt)"
-              :bg-color="
-                msg.mentions.includes('jordan') && !['system', 'you'].includes(msg.sender)
-                  ? 'warning'
-                  : undefined
-              "
-            >
-              <template v-slot:avatar v-if="!msg.isOwn">
-                <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
-                  {{ msg.sender[0] }}
-                  <q-badge
-                    :color="i % 3 == 0 ? 'positive' : i % 3 == 1 ? 'negative' : 'secondary'"
-                    rounded
-                    floating
-                  />
-                </q-avatar>
-              </template>
-              <div>
-                <span
-                  v-for="(token, i) in msg.tokens"
-                  :key="i"
-                  :class="{
-                    'text-weight-bold': token.type === 'mention',
-                    'bg-warning': token.type === 'mention' && msg.sender !== 'system',
-                    'bg-secondary': token.type === 'mention' && msg.sender === 'system',
-                  }"
-                >
-                  {{ token.value }}
-                </span>
-              </div>
-            </q-chat-message>
-          </div>
 
-
-          <div v-if="false" class="text-primary q-mt-sm">
-            {{ typingUser }} is typing...
-            <q-btn
-              flat
-              size="sm"
-              :label="showPreview ? 'Close' : 'View live'"
-              @click="showPreview = !showPreview"
-            />
-          </div>
-
-
-          <q-chip v-if="false" class="q-pa-sm q-mt-sm bg-grey-2">
-            <div class="text-caption text-secondary">{{ typingUser }}'s draft:</div>
-            <div class="text-primary">{{ liveDraft }}</div>
-          </q-chip>
-
-    -->
       <div v-for="(msg) in messages" :key="msg.id" class="q-mb-sm">
           <q-chat-message
           :sent="msg.userId === authStore.currentUser?.id"
