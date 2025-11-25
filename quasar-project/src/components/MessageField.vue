@@ -64,7 +64,7 @@ export default defineComponent({
   },
   methods: {
     addMessage() {
-      if (this.isMessageEmpty || (this.commands.length && !this.commands[0].startsWith('/'))) {
+      if (this.isMessageEmpty || (this.commands.length && !this.commands[0]!.startsWith('/'))) {
         return;
       }
 
@@ -102,12 +102,12 @@ export default defineComponent({
           }
 
           case '/quit': {
-            this.socketStore.ws?.emit('join:sent', this.channel!.id);
+            this.socketStore.ws?.emit('quit:sent', this.channel!.id);
             break;
           }
 
           case '/cancel': {
-            this.socketStore.ws?.emit('join:sent', this.channel!.id);
+            this.socketStore.ws?.emit('cancel:sent', this.channel!.id);
             break;
           }
 
