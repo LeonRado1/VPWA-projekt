@@ -168,6 +168,14 @@
           </q-chip>
 
     -->
+      <div v-for="(msg) in messages" :key="msg.id" class="q-mb-sm">
+          <q-chat-message
+          :sent="msg.userId === authStore.currentUser?.id"
+          :name="getUserName(msg.userId)"
+          :stamp="calculateTimeAgo(msg.sentAt)"
+          :text="[msg.content]"
+        />
+      </div>
     </q-scroll-area>
 
     <div
@@ -200,7 +208,7 @@ import { getChannel } from 'src/services/channelService';
 import { type Channel } from 'src/models/Channel';
 import { type AuthStoreType, useAuthStore } from 'stores/auth';
 import MessageField from 'components/MessageField.vue';
-
+import { getMessages } from 'src/services/messageService';
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
 }
@@ -214,6 +222,7 @@ interface ChannelMessagesState {
   adminOptionsDialogOpen: boolean;
   userToAdd: string;
   listeners: EventMap;
+  messages: any[];
 }
 
 export default defineComponent({
@@ -228,12 +237,26 @@ export default defineComponent({
       adminOptionsDialogOpen: false,
       userToAdd: '',
       listeners: {},
+      messages: [] as any[],
+
     };
   },
   methods: {
     async loadChannel(channelId: string) {
       const response = await getChannel(channelId);
+       const msgs = await getMessages(channelId);
+      if (msgs.success) {
+        this.messages = msgs.data.map((m: any) => ({
+          ...m,
+          sentAt: new Date(m.sentAt)
+        }))
+       console.log("nove spravy:" , msgs);
 
+        await nextTick()
+        this.scrollToBottom()
+        this.socketStore.ws?.emit('message:join', channelId);
+
+      }
       if (response.success) {
         this.channel = response.data!;
         console.log(this.channel);
@@ -241,6 +264,9 @@ export default defineComponent({
         notify(response.message!, true);
       }
     },
+      getUserName(userId: number) {
+    return this.channel?.users?.find(u => u.id === userId)?.nickname ?? 'Unknown';
+  },
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
     },
@@ -273,6 +299,15 @@ export default defineComponent({
         this.channelsStore.removeChannel(channel.id);
         await this.$router.push('/');
       };
+
+       this.listeners['message:new'] = async (msg) => {
+      this.messages.push({
+        ...msg,
+        sentAt: new Date(msg.sentAt)
+    });
+    await nextTick();
+    this.scrollToBottom();
+  };
     },
     subscribe() {
       Object.keys(this.listeners).forEach((event) => {
@@ -312,6 +347,7 @@ export default defineComponent({
 
     this.initializeListeners();
     this.subscribe();
+   
   },
   beforeUnmount() {
     this.unsubscribe();
