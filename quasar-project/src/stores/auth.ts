@@ -1,6 +1,7 @@
 import { LocalStorage } from 'quasar';
 import { defineStore } from 'pinia';
 import { type User } from 'src/models/User';
+import { useSocketStore } from 'stores/socket';
 
 interface AuthState {
   user: User | null;
@@ -21,12 +22,18 @@ export const useAuthStore = defineStore('auth', {
     onInit(token: string, user: User) {
       this.token = token;
       this.user = user;
+
+      const socketStore = useSocketStore();
+      socketStore.connect(token);
     },
     async onLogin(token: string, user: User) {
       LocalStorage.setItem('auth_token', token);
 
       this.token = token;
       this.user = user;
+
+      const socketStore = useSocketStore();
+      socketStore.connect(token);
 
       await this.router.push('/');
     },

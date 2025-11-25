@@ -6,6 +6,7 @@ export interface User {
   email: string;
   createdAt: string;
   settings?: Setting;
+  isAdmin: boolean | null;
 }
 
 export interface Setting {

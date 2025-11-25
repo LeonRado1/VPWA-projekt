@@ -19,7 +19,7 @@
             size="sm"
             class="q-mr-sm"
             icon="settings"
-            @click="openSettings = !openSettings"
+            @click="settingsDialogOpen = !settingsDialogOpen"
           />
           <q-btn
             @click="channelDialogOpen = !channelDialogOpen"
@@ -32,7 +32,7 @@
       </div>
     </q-drawer>
 
-    <q-dialog v-model="openSettings" persistent>
+    <q-dialog v-model="settingsDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-secondary">Notifications</q-card-section>
         <q-card-section>
@@ -62,7 +62,7 @@
 
         <q-card-section>
           <q-input
-            v-model="newChannelName"
+            v-model="form.name"
             filled
             dense
             label="Channel Name"
@@ -75,15 +75,15 @@
             </template>
           </q-input>
           <div class="flex justify-center items-center text-weight-bold">
-            <span :class="{ 'text-primary': !newChannelIsPublic }">Private</span>
+            <span :class="{ 'text-primary': !form.isPublic }">Private</span>
             <q-toggle
-              v-model="newChannelIsPublic"
+              v-model="form.isPublic"
               color="primary"
               checked-icon="lock_open"
               unchecked-icon="lock"
               keep-color
             />
-            <span :class="{ 'text-primary': newChannelIsPublic }">Public</span>
+            <span :class="{ 'text-primary': form.isPublic }">Public</span>
           </div>
         </q-card-section>
 
@@ -106,42 +106,54 @@
 import { defineComponent } from 'vue';
 import AppNavbar from 'components/AppNavbar.vue';
 import ChannelsList from 'components/ChannelsList.vue';
-import { addChannel } from 'src/misc/data';
-import type { Channel } from 'src/types/channel';
+import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
+import { type ChannelPayload } from 'src/models/Channel';
+import { type SocketStoreType, useSocketStore } from 'stores/socket';
+
+interface MainWindowLayoutState {
+  form: ChannelPayload;
+  channelsStore: ChannelsStoreType;
+  socketStore: SocketStoreType;
+  channelDialogOpen: boolean;
+  settingsDialogOpen: boolean;
+  notificationSwitch: boolean;
+  sidebarOpen: boolean;
+}
+
 export default defineComponent({
   name: 'MainWindowLayout',
   components: {
     ChannelsList,
     AppNavbar,
   },
-  data() {
+  data(): MainWindowLayoutState {
     return {
-      sidebarOpen: true,
+      form: {
+        name: '',
+        isPublic: false,
+      },
+      channelsStore: useChannelsStore(),
+      socketStore: useSocketStore(),
       channelDialogOpen: false,
-      newChannelName: '',
-      newChannelIsPublic: false,
-      openSettings: false,
+      settingsDialogOpen: false,
       notificationSwitch: false,
+      sidebarOpen: true,
     };
   },
   methods: {
     createChannel() {
-      if (this.newChannelName.trim() === '') {
-        return;
-      }
-      const newChannel: Channel = {
-        id: Date.now().toString(),
-        name: this.newChannelName,
-        lastMessage: 'Welcome to the team, everyone!',
-        lastActivity: new Date(),
-        isPublic: this.newChannelIsPublic,
-        isInvite: false,
-        isAdmin: true,
-      };
-      addChannel(newChannel);
-      this.newChannelName = '';
-      this.newChannelIsPublic = false;
+      this.socketStore.ws?.emit('join:sent', this.form.name, this.form.isPublic, true);
       this.channelDialogOpen = false;
+    },
+  },
+  watch: {
+    channelDialogOpen(newValue) {
+      if (!newValue) {
+        this.form = {
+          name: '',
+          isPublic: false,
+        };
+      }
     },
   },
 });

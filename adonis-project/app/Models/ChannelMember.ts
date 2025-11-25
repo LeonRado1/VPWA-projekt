@@ -8,7 +8,7 @@ export default class ChannelMember extends BaseModel {
   public id: number
 
   @column({ columnName: 'user_id' })
-  public userId: string
+  public userId: number
 
   @column({ columnName: 'channel_id' })
   public channelId: string

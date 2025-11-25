@@ -7,16 +7,16 @@
 |
 */
 
-import Ws from '@ioc:Ruby184/Socket.IO/Ws'
+import Ws from '@ioc:Ruby184/Socket.IO/Ws';
 
-Ws.namespace('/')
-  .connected(({ socket }) => {
-    console.log('new websocket connection: ', socket.id)
-  })
-  .disconnected(({ socket }, reason) => {
-    console.log('websocket disconnecting: ', socket.id, reason)
-  })
-  .on('hello', ({ socket }, msg: string) => {
-    console.log('websocket greeted: ', socket.id, msg)
-    return 'hi'
-  })
+Ws.namespace('/ws')
+  .connected('WsChannelsController.onConnect')
+  .disconnected('WsChannelsController.onDisconnect')
+  .on('join:sent', 'WsChannelsController.onChannelJoin')
+  .on('invite:sent', 'WsChannelsController.onChannelInvite')
+  .on('revoke:sent', 'WsChannelsController.onChannelRevoke')
+  .on('kick:sent', 'WsChannelsController.onChannelKick')
+  .on('quit:sent', 'WsChannelsController.onChannelQuit')
+  .on('cancel:sent', 'WsChannelsController.onChannelCancel')
+  .on('invite:accept', 'WsChannelsController.onInviteAccept')
+  .on('invite:reject', 'WsChannelsController.onInviteReject');
