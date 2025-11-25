@@ -19,7 +19,7 @@
             size="sm"
             class="q-mr-sm"
             icon="settings"
-            @click="openSettings = !openSettings"
+            @click="settingsDialogOpen = !settingsDialogOpen"
           />
           <q-btn
             @click="channelDialogOpen = !channelDialogOpen"
@@ -32,7 +32,7 @@
       </div>
     </q-drawer>
 
-    <q-dialog v-model="openSettings" persistent>
+    <q-dialog v-model="settingsDialogOpen" persistent>
       <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-secondary">Notifications</q-card-section>
         <q-card-section>
@@ -108,12 +108,14 @@ import AppNavbar from 'components/AppNavbar.vue';
 import ChannelsList from 'components/ChannelsList.vue';
 import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
 import { type ChannelPayload } from 'src/models/Channel';
+import { type SocketStoreType, useSocketStore } from 'stores/socket';
 
 interface MainWindowLayoutState {
   form: ChannelPayload;
   channelsStore: ChannelsStoreType;
+  socketStore: SocketStoreType;
   channelDialogOpen: boolean;
-  openSettings: boolean;
+  settingsDialogOpen: boolean;
   notificationSwitch: boolean;
   sidebarOpen: boolean;
 }
@@ -131,14 +133,28 @@ export default defineComponent({
         isPublic: false,
       },
       channelsStore: useChannelsStore(),
+      socketStore: useSocketStore(),
       channelDialogOpen: false,
-      openSettings: false,
+      settingsDialogOpen: false,
       notificationSwitch: false,
       sidebarOpen: true,
     };
   },
   methods: {
-    async createChannel() {},
+    createChannel() {
+      this.socketStore.ws?.emit('join:sent', this.form.name, this.form.isPublic, true);
+      this.channelDialogOpen = false;
+    },
+  },
+  watch: {
+    channelDialogOpen(newValue) {
+      if (!newValue) {
+        this.form = {
+          name: '',
+          isPublic: false,
+        };
+      }
+    },
   },
 });
 </script>

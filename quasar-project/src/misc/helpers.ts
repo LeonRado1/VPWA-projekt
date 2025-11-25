@@ -1,6 +1,6 @@
 import { Notify } from 'quasar';
-import { type Message } from 'src/types/message';
 import axios from 'axios';
+import { type Message } from 'src/models/Message';
 
 export interface MessageToken {
   type: 'mention' | 'text';
@@ -47,7 +47,9 @@ export function calculateTimeAgo(date: Date) {
 
 export function tokenizeMessage(msg: Message): MessageToken[] {
   const tokens: MessageToken[] = [];
+  console.log(msg);
 
+  /*
   const parts = msg.message.split(/(@\w+)/g);
   const mentions = msg.mentions.map((m) => m.toLowerCase());
 
@@ -61,6 +63,7 @@ export function tokenizeMessage(msg: Message): MessageToken[] {
       tokens.push({ type: 'text', value: part });
     }
   }
+  */
 
   return tokens;
 }

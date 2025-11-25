@@ -31,14 +31,12 @@ import { defineComponent } from 'vue';
 import { calculateTimeAgo, notify } from 'src/misc/helpers';
 import { type Channel } from 'src/models/Channel';
 import { useChannelsStore } from 'stores/channels';
-import { useSocketStore } from 'stores/socket';
 import { getChannels } from 'src/services/channelService';
 
 export default defineComponent({
   data() {
     return {
       channelsStore: useChannelsStore(),
-      socketStore: useSocketStore(),
     };
   },
   methods: {
