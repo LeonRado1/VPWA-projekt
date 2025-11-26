@@ -80,12 +80,10 @@ export default defineComponent({
 
     if (!socket) return;
 
-    // pripojenie do room
     if (this.channel?.id) {
       socket.emit("message:join", this.channel.id);
     }
 
-    // prijem správ
     socket.on("message", (msg) => {
       console.log("FE: incoming WS message:", msg);
       this.$emit("message-received", msg);

@@ -19,7 +19,7 @@ export const useChannelsStore = defineStore('channels', {
       }
     },
     removeChannel(channelId: string) {
-      this.channels = this.channels.filter((x) => x.id === channelId);
+      this.channels = this.channels.filter((x) => x.id !== channelId);
     },
     setChannels(channels: Channel[]) {
       this.channels = channels;

@@ -85,7 +85,7 @@
             unelevated
             label="Delete Channel"
             color="negative"
-            @click="leaveChannel"
+            @click="deleteChannel"
           />
         </q-card-section>
         <q-separator />
@@ -152,6 +152,8 @@ import { type Channel } from 'src/models/Channel';
 import { type AuthStoreType, useAuthStore } from 'stores/auth';
 import MessageField from 'components/MessageField.vue';
 import { getMessages } from 'src/services/messageService';
+import { leaveChannel } from 'src/services/channelService';
+import { deleteChannel } from 'src/services/channelService';
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
 }
@@ -193,7 +195,6 @@ export default defineComponent({
           ...m,
           sentAt: new Date(m.sentAt)
         }))
-       console.log("nove spravy:" , msgs);
 
         await nextTick()
         this.scrollToBottom()
@@ -202,7 +203,6 @@ export default defineComponent({
       }
       if (response.success) {
         this.channel = response.data!;
-        console.log(this.channel);
       } else {
         notify(response.message!, true);
       }
@@ -213,7 +213,23 @@ export default defineComponent({
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
     },
-    async leaveChannel() {},
+    async leaveChannel() {
+        const response = await leaveChannel(this.channel!.id);
+        if (response.success) {
+          await this.$router.push('/');
+        } else {
+          notify(response.message!, true);
+        }
+    },
+    async deleteChannel() {
+      const response = await deleteChannel(this.channel!.id);
+      if (response.success) {
+        this.channelsStore.removeChannel(this.channel!.id);
+        await this.$router.push('/');
+      } else {
+        notify(response.message!, true);
+      }
+    },
     acceptInvite() {
       this.socketStore.ws?.emit('invite:accept', this.channel?.invites?.[0]?.id);
     },

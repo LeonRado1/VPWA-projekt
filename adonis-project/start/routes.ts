@@ -30,7 +30,7 @@ Route.group(() => {
 Route.group(() => {
   Route.get('/', 'ChannelsController.getChannels').middleware('auth');
   Route.get('/:id', 'ChannelsController.getChannel').middleware('auth');
+  Route.get('/:id/messages', 'MessagesController.index').middleware('auth');
+
 }).prefix('/channels');
 
-Route.get('/channels/:id/messages', 'MessagesController.index')
-  .middleware('auth')
