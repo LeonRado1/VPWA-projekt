@@ -26,7 +26,7 @@
                 :model-value="status.value"
                 :dense="$q.screen.lt.sm"
                 spread
-                toggle-color="primary"
+                :toggle-color="status.value"
                 unelevated
                 size="sm"
                 :options="options"
@@ -79,6 +79,11 @@ const options = [
     label: 'Online',
     value: 'positive',
     icon: 'notifications_on',
+  },
+  {
+    label: 'Offline',
+    value: 'negative',
+    icon: 'notifications_paused',
   },
   {
     label: 'DND',

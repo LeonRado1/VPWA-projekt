@@ -4,6 +4,8 @@ import { notify } from 'src/misc/helpers';
 import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
 import type { Channel } from 'src/models/Channel';
 import { useAuthStore } from 'stores/auth';
+import type { Message } from 'src/models/Message';
+import { AppVisibility } from 'quasar';
 
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
@@ -74,6 +76,22 @@ export const useSocketStore = defineStore('socket', {
           await this.router.push('/');
         }
         this.channelsStore.removeChannel(channelId);
+      };
+
+      this.listeners['message:new'] = (message: Message) => {
+        const user = this.authStore.currentUser;
+
+        if (!AppVisibility.appVisible && !(message.userId === user?.id)) {
+          if (user?.settings?.onlyAddressed && !message.mentions.some((x) => x.userId === user?.id))
+            return;
+
+          new Notification(`New Message from: ${message.user.nickname}`, {
+            body: message.content.slice(0, 60) + (message.content.length > 60 ? '…' : ''),
+            icon: '/icons/favicon.svg',
+          });
+        }
+
+        this.channelsStore.updateChannelActivity(message);
       };
     },
     subscribe() {

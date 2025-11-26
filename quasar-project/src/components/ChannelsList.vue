@@ -66,7 +66,6 @@ export default defineComponent({
   },
   computed: {
     channelsSorted(): Channel[] {
-      console.log(this.channelsStore.channels);
       return [...this.channelsStore.channels].sort((a, b) => {
         if (this.isInvite(a) && !this.isInvite(b)) {
           return -1;

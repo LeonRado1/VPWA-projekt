@@ -45,18 +45,7 @@
       <q-card class="shadow-1 rounded-xl" style="min-width: min(400px, 95%)">
         <q-card-section class="text-h6 text-secondary">Channel Settings</q-card-section>
         <q-card-section>
-          <div class="row justify-center items-center text-weight-bold">
-            <span :class="{ 'text-primary': !channel.isPublic }">Private</span>
-            <q-toggle
-              v-model="channel.isPublic"
-              color="primary"
-              checked-icon="lock_open"
-              unchecked-icon="lock"
-              keep-color
-            />
-            <span :class="{ 'text-primary': channel.isPublic }">Public</span>
-          </div>
-          <div class="row items-start no-wrap q-mt-md">
+          <div class="row items-start no-wrap">
             <q-input
               class="col-9 q-mr-sm"
               v-model="userToAdd"
