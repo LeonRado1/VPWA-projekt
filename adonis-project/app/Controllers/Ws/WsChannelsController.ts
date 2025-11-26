@@ -324,14 +324,14 @@ export default class WsChannelsController {
         channelId: channel.id,
         isAdmin: false,
       });
-
+      await channel.load('users'); 
       await channel.load('messages', (query) => {
         query.orderBy('sent_at', 'desc').limit(1);
       });
 
       socket.join(`channel:${channel.id}`);
-
       socket.emit('invite:accepted', channel);
+      socket.to(`channel:${channel.id}`).emit('invite:accepted', channel);
       socket.emit('result:success', 'Invite was accepted successfully');
     } catch (error) {
       if (error.code === 'E_ROW_NOT_FOUND') {
