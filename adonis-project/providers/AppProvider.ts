@@ -13,7 +13,13 @@ export default class AppProvider {
   }
 
   public async ready () {
-    // App is ready
+    // App is ready — start background tasks like scheduler here
+    try {
+      const { startScheduler } = await import('../start/scheduler')
+      startScheduler()
+    } catch (err) {
+      console.error('Failed to start scheduler:', err)
+    }
   }
 
   public async shutdown () {

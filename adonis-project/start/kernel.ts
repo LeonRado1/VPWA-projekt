@@ -44,3 +44,5 @@ Server.middleware.register([
 Server.middleware.registerNamed({
   auth: () => import("App/Middleware/Auth"),
 });
+
+// scheduler is started from AppProvider.ready() to ensure DB/models are booted
