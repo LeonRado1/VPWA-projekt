@@ -85,7 +85,7 @@
             unelevated
             label="Delete Channel"
             color="negative"
-            @click="leaveChannel"
+            @click="deleteChannel"
           />
         </q-card-section>
         <q-separator />
@@ -110,64 +110,16 @@
     </q-dialog>
 
     <q-scroll-area v-if="!isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
-      <!--
-          <div v-for="(msg, i) in tokenizedMessages" :key="msg.id">
-            <q-chat-message
-              :class="{ 'q-mt-md': i == 0 }"
-              class="q-pr-sm"
-              :sent="msg.isOwn"
-              :name="msg.sender"
-              :stamp="calculateTimeAgo(msg.sentAt)"
-              :bg-color="
-                msg.mentions.includes('jordan') && !['system', 'you'].includes(msg.sender)
-                  ? 'warning'
-                  : undefined
-              "
-            >
-              <template v-slot:avatar v-if="!msg.isOwn">
-                <q-avatar color="secondary" class="q-mr-md" size="lg" text-color="white">
-                  {{ msg.sender[0] }}
-                  <q-badge
-                    :color="i % 3 == 0 ? 'positive' : i % 3 == 1 ? 'negative' : 'secondary'"
-                    rounded
-                    floating
-                  />
-                </q-avatar>
-              </template>
-              <div>
-                <span
-                  v-for="(token, i) in msg.tokens"
-                  :key="i"
-                  :class="{
-                    'text-weight-bold': token.type === 'mention',
-                    'bg-warning': token.type === 'mention' && msg.sender !== 'system',
-                    'bg-secondary': token.type === 'mention' && msg.sender === 'system',
-                  }"
-                >
-                  {{ token.value }}
-                </span>
-              </div>
-            </q-chat-message>
-          </div>
 
-
-          <div v-if="false" class="text-primary q-mt-sm">
-            {{ typingUser }} is typing...
-            <q-btn
-              flat
-              size="sm"
-              :label="showPreview ? 'Close' : 'View live'"
-              @click="showPreview = !showPreview"
-            />
-          </div>
-
-
-          <q-chip v-if="false" class="q-pa-sm q-mt-sm bg-grey-2">
-            <div class="text-caption text-secondary">{{ typingUser }}'s draft:</div>
-            <div class="text-primary">{{ liveDraft }}</div>
-          </q-chip>
-
-    -->
+      <div v-for="(msg) in messages" :key="msg.id" class="q-mb-sm">
+          <q-chat-message
+          :sent="msg.userId === authStore.currentUser?.id"
+          :name="getUserName(msg.userId)"
+          :stamp="calculateTimeAgo(msg.sentAt)"
+        >
+            <div v-html="formatMessage(msg.content)"></div>
+        </q-chat-message>
+      </div>
     </q-scroll-area>
 
     <div
@@ -200,7 +152,9 @@ import { getChannel } from 'src/services/channelService';
 import { type Channel } from 'src/models/Channel';
 import { type AuthStoreType, useAuthStore } from 'stores/auth';
 import MessageField from 'components/MessageField.vue';
-
+import { getMessages } from 'src/services/messageService';
+import { leaveChannel } from 'src/services/channelService';
+import { deleteChannel } from 'src/services/channelService';
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
 }
@@ -214,6 +168,7 @@ interface ChannelMessagesState {
   adminOptionsDialogOpen: boolean;
   userToAdd: string;
   listeners: EventMap;
+  messages: any[];
 }
 
 export default defineComponent({
@@ -228,23 +183,60 @@ export default defineComponent({
       adminOptionsDialogOpen: false,
       userToAdd: '',
       listeners: {},
+      messages: [] as any[],
+
     };
   },
   methods: {
+    formatMessage(text: string) {
+      return text.replace(
+        /@(\w+)/g,
+        `<span class="text-blue">@$1</span>`
+      );
+    },
     async loadChannel(channelId: string) {
       const response = await getChannel(channelId);
+       const msgs = await getMessages(channelId);
+      if (msgs.success) {
+        this.messages = msgs.data.map((m: any) => ({
+          ...m,
+          sentAt: new Date(m.sentAt)
+        }))
 
+        await nextTick()
+        this.scrollToBottom()
+        this.socketStore.ws?.emit('message:join', channelId);
+
+      }
       if (response.success) {
         this.channel = response.data!;
-        console.log(this.channel);
       } else {
         notify(response.message!, true);
       }
     },
+      getUserName(userId: number) {
+    return this.channel?.users?.find(u => u.id === userId)?.nickname ?? 'Unknown';
+  },
     calculateTimeAgo(date: Date) {
       return calculateTimeAgo(date);
     },
-    async leaveChannel() {},
+    async leaveChannel() {
+        const response = leaveChannel(this.channel!.id);
+        if (response.success) {
+          await this.$router.push('/');
+        } else {
+          notify(response.message!, true);
+        }
+    },
+    async deleteChannel() {
+      const response = deleteChannel(this.channel!.id);
+      if (response.success) {
+        this.channelsStore.removeChannel(this.channel!.id);
+        await this.$router.push('/');
+      } else {
+        notify(response.message!, true);
+      }
+    },
     acceptInvite() {
       this.socketStore.ws?.emit('invite:accept', this.channel?.invites?.[0]?.id);
     },
@@ -262,7 +254,12 @@ export default defineComponent({
       }
     },
     onmessageAdded() {},
-    addUserToChannel() {},
+    addUserToChannel() {
+      if (!this.userToAdd) return;
+
+      this.socketStore.ws?.emit('invite:sent', this.channel!.id, this.userToAdd);
+      this.userToAdd = '';
+    },
     initializeListeners() {
       this.listeners['invite:accepted'] = async (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
@@ -273,6 +270,15 @@ export default defineComponent({
         this.channelsStore.removeChannel(channel.id);
         await this.$router.push('/');
       };
+
+       this.listeners['message:new'] = async (msg) => {
+      this.messages.push({
+        ...msg,
+        sentAt: new Date(msg.sentAt)
+    });
+    await nextTick();
+    this.scrollToBottom();
+  };
     },
     subscribe() {
       Object.keys(this.listeners).forEach((event) => {
@@ -312,9 +318,17 @@ export default defineComponent({
 
     this.initializeListeners();
     this.subscribe();
+   
   },
   beforeUnmount() {
     this.unsubscribe();
   },
 });
 </script>
+
+<style>
+.mention {
+  color: #ff9800;  
+  font-weight: bold;
+}
+</style>
