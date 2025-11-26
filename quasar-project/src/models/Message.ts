@@ -8,5 +8,5 @@ export interface Message {
   userId: number;
   sentAt: string;
   user: User;
-  mentions: Mention;
+  mentions: Mention[];
 }

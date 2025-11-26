@@ -4,6 +4,7 @@ import { notify } from 'src/misc/helpers';
 import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
 import type { Channel } from 'src/models/Channel';
 import { useAuthStore } from 'stores/auth';
+
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
 }
@@ -23,7 +24,6 @@ export const useSocketStore = defineStore('socket', {
     channelsStore: useChannelsStore(),
     listeners: {},
     authStore: useAuthStore(),
-
   }),
   actions: {
     connect(token: string) {
@@ -57,48 +57,24 @@ export const useSocketStore = defineStore('socket', {
       });
     },
     initializeListeners() {
-      this.listeners['join:added'] = (channel: Channel) => {
+      this.listeners['join:added'] = async (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
+
+        await this.router.push(`/channels/${channel.id}`);
       };
 
       this.listeners['invite:received'] = (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
       };
-      this.listeners['invite:accepted'] = (channel: Channel) => {
-        console.log(channel);
-        this.channelsStore.addOrUpdateChannel(channel);
-      };
-      this.listeners['revoke:received'] = async (channelId: string) => {
-        const currentChannelId = this.router.currentRoute.value.params.id;
-        if (currentChannelId === channelId) {
-          await this.router.push('/');
-        }
-        this.channelsStore.removeChannel(channelId);
-      };
-
-      this.listeners['kick:removed'] = async (channelId: string) => {
-        const currentChannelId = this.router.currentRoute.value.params.id;
-        if (currentChannelId === channelId) {
-          await this.router.push('/');
-        }
-        this.channelsStore.removeChannel(channelId);
-      };
 
       this.listeners['channel:removed'] = async (channelId: string) => {
         const currentChannelId = this.router.currentRoute.value.params.id;
-        console.log('removing channel')
+
         if (currentChannelId === channelId) {
           await this.router.push('/');
-          console.log('removing channel');
-          this.channelsStore.removeChannel(channelId)
         }
         this.channelsStore.removeChannel(channelId);
       };
-      this.listeners['channel:left'] = ({ channelId, userId }) => {
-      if (userId === this.authStore.currentUser?.id) {
-        this.channelsStore.removeChannel(channelId)
-      }
-};
     },
     subscribe() {
       Object.keys(this.listeners).forEach((event) => {
