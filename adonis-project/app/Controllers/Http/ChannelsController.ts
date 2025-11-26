@@ -1,7 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Channel from 'App/Models/Channel';
-import ChannelMember from 'App/Models/ChannelMember';
-import Ws from '@ioc:Ruby184/Socket.IO/Ws'
+
 export default class ChannelsController {
   public async getChannels({ auth, response }: HttpContextContract) {
     const channels = await Channel.query()

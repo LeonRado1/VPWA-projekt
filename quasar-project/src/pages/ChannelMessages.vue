@@ -116,8 +116,9 @@
           :sent="msg.userId === authStore.currentUser?.id"
           :name="getUserName(msg.userId)"
           :stamp="calculateTimeAgo(msg.sentAt)"
-          :text="[msg.content]"
-        />
+        >
+            <div v-html="formatMessage(msg.content)"></div>
+        </q-chat-message>
       </div>
     </q-scroll-area>
 
@@ -187,6 +188,12 @@ export default defineComponent({
     };
   },
   methods: {
+    formatMessage(text: string) {
+      return text.replace(
+        /@(\w+)/g,
+        `<span class="text-blue">@$1</span>`
+      );
+    },
     async loadChannel(channelId: string) {
       const response = await getChannel(channelId);
        const msgs = await getMessages(channelId);
@@ -214,7 +221,7 @@ export default defineComponent({
       return calculateTimeAgo(date);
     },
     async leaveChannel() {
-        const response = await leaveChannel(this.channel!.id);
+        const response = leaveChannel(this.channel!.id);
         if (response.success) {
           await this.$router.push('/');
         } else {
@@ -222,7 +229,7 @@ export default defineComponent({
         }
     },
     async deleteChannel() {
-      const response = await deleteChannel(this.channel!.id);
+      const response = deleteChannel(this.channel!.id);
       if (response.success) {
         this.channelsStore.removeChannel(this.channel!.id);
         await this.$router.push('/');
@@ -247,7 +254,12 @@ export default defineComponent({
       }
     },
     onmessageAdded() {},
-    addUserToChannel() {},
+    addUserToChannel() {
+      if (!this.userToAdd) return;
+
+      this.socketStore.ws?.emit('invite:sent', this.channel!.id, this.userToAdd);
+      this.userToAdd = '';
+    },
     initializeListeners() {
       this.listeners['invite:accepted'] = async (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
@@ -313,3 +325,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.mention {
+  color: #ff9800;  
+  font-weight: bold;
+}
+</style>

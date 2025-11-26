@@ -85,7 +85,6 @@ export default defineComponent({
     }
 
     socket.on("message", (msg) => {
-      console.log("FE: incoming WS message:", msg);
       this.$emit("message-received", msg);
     });
   },
@@ -138,11 +137,12 @@ export default defineComponent({
             break;
         }
       } else {
-        // 🔥 ODOŠLI SPRÁVU DO BACKENDU
         socket.emit("message:send", {
           channelId: this.channel!.id,
           content: this.newMessage.trim(),
+          mentions: this.mentions,
         });
+       
       }
     },
   },
@@ -157,7 +157,7 @@ export default defineComponent({
 
       const command = parts[0];
       const args = parts.slice(1);
-
+      console.log(command)
       switch (command) {
         case "/join":
           if (args.length === 1) return parts;
