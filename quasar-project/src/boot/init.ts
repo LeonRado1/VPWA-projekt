@@ -19,4 +19,8 @@ export default defineBoot(async () => {
       LocalStorage.removeItem('auth_token');
     }
   }
+
+  if (Notification.permission !== 'granted') {
+    await Notification.requestPermission();
+  }
 });

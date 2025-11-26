@@ -28,13 +28,7 @@ export default class ChannelsController {
       })
       .firstOrFail();
 
-    if (channel.users.some((x) => x.id === auth.user!.id)) {
-      await channel.load('messages', (query) => {
-        query.orderBy('sent_at', 'desc');
-        query.preload('user');
-        query.preload('mentions');
-      });
-    } else {
+    if (!channel.users.some((x) => x.id === auth.user!.id)) {
       await channel.load('invites', (query) => {
         query.where('for_user_id', auth.user!.id).limit(1);
       });
@@ -42,6 +36,4 @@ export default class ChannelsController {
 
     return response.ok(channel);
   }
-
-
 }

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { type Channel } from 'src/models/Channel';
+import { type Message } from 'src/models/Message';
 
 interface ChannelsState {
   channels: Channel[];
@@ -23,6 +24,13 @@ export const useChannelsStore = defineStore('channels', {
     },
     setChannels(channels: Channel[]) {
       this.channels = channels;
+    },
+    updateChannelActivity(message: Message) {
+      const channel = this.channels.find((x) => x.id === message.channelId);
+
+      if (channel) {
+        channel.messages = [message];
+      }
     },
   },
 });

@@ -47,11 +47,9 @@ export function calculateTimeAgo(date: Date) {
 
 export function tokenizeMessage(msg: Message): MessageToken[] {
   const tokens: MessageToken[] = [];
-  console.log(msg);
 
-  /*
-  const parts = msg.message.split(/(@\w+)/g);
-  const mentions = msg.mentions.map((m) => m.toLowerCase());
+  const parts = msg.content.split(/(@\w+)/g);
+  const mentions = msg.mentions.map((m) => m.user.nickname);
 
   for (const part of parts) {
     if (!part) continue;
@@ -63,7 +61,6 @@ export function tokenizeMessage(msg: Message): MessageToken[] {
       tokens.push({ type: 'text', value: part });
     }
   }
-  */
 
   return tokens;
 }

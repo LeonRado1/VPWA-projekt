@@ -37,20 +37,20 @@
         <q-card-section class="text-h6 text-secondary">Notifications</q-card-section>
         <q-card-section>
           <div class="flex justify-center items-center text-weight-bold">
-            <span :class="{ 'text-primary': !notificationSwitch }">All</span>
+            <span :class="{ 'text-primary': !onlyAddressed }">All</span>
             <q-toggle
-              v-model="notificationSwitch"
+              :model-value="onlyAddressed"
+              @update:model-value="toggleOnlyAddressed"
               color="primary"
               keep-color
               checked-icon="notifications_off"
               unchecked-icon="notifications"
             />
-            <span :class="{ 'text-primary': notificationSwitch }">Mentions</span>
+            <span :class="{ 'text-primary': onlyAddressed }">Mentions</span>
           </div>
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
-          <q-btn unelevated class="q-mr-xs" label="Save" color="primary" />
           <q-btn flat label="Close" color="secondary" v-close-popup />
         </q-card-actions>
       </q-card>
@@ -106,17 +106,18 @@
 import { defineComponent } from 'vue';
 import AppNavbar from 'components/AppNavbar.vue';
 import ChannelsList from 'components/ChannelsList.vue';
-import { type ChannelsStoreType, useChannelsStore } from 'stores/channels';
 import { type ChannelPayload } from 'src/models/Channel';
 import { type SocketStoreType, useSocketStore } from 'stores/socket';
+import { type AuthStoreType, useAuthStore } from 'stores/auth';
+import { toggleNotificationsSetting } from 'src/services/settingsService';
+import { notify } from 'src/misc/helpers';
 
 interface MainWindowLayoutState {
   form: ChannelPayload;
-  channelsStore: ChannelsStoreType;
+  authStore: AuthStoreType;
   socketStore: SocketStoreType;
   channelDialogOpen: boolean;
   settingsDialogOpen: boolean;
-  notificationSwitch: boolean;
   sidebarOpen: boolean;
 }
 
@@ -132,11 +133,10 @@ export default defineComponent({
         name: '',
         isPublic: false,
       },
-      channelsStore: useChannelsStore(),
+      authStore: useAuthStore(),
       socketStore: useSocketStore(),
       channelDialogOpen: false,
       settingsDialogOpen: false,
-      notificationSwitch: false,
       sidebarOpen: true,
     };
   },
@@ -144,6 +144,20 @@ export default defineComponent({
     createChannel() {
       this.socketStore.ws?.emit('join:sent', this.form.name, this.form.isPublic, true);
       this.channelDialogOpen = false;
+    },
+    async toggleOnlyAddressed() {
+      const response = await toggleNotificationsSetting();
+
+      if (response.success && this.authStore.currentUser) {
+        this.authStore.currentUser.settings = response.data!;
+      } else {
+        notify(response.message!, true);
+      }
+    },
+  },
+  computed: {
+    onlyAddressed() {
+      return this.authStore.currentUser?.settings?.onlyAddressed ?? false;
     },
   },
   watch: {
