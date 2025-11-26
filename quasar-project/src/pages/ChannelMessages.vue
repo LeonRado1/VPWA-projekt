@@ -109,16 +109,33 @@
       </q-card>
     </q-dialog>
 
-    <q-scroll-area v-if="!isInvite" style="flex: 1 1 0" class="q-px-sm" ref="scrollArea">
-
-      <div v-for="(msg) in messages" :key="msg.id" class="q-mb-sm">
-          <q-chat-message
-          :sent="msg.userId === authStore.currentUser?.id"
-          :name="getUserName(msg.userId)"
-          :stamp="calculateTimeAgo(msg.sentAt)"
+    <q-scroll-area
+      ref="scrollArea"
+      style="flex: 1 1 0; overflow-x: hidden;"
+      class="q-px-sm"
+    >
+      <div ref="scrollTarget" style="overflow-y: auto; max-height: 100%; overflow-x: hidden !important;">
+        <q-infinite-scroll
+          reverse
+          :offset="200"
+          @load="loadMoreMessages"
         >
-            <div v-html="formatMessage(msg.content)"></div>
-        </q-chat-message>
+          <div v-for="msg in messages" :key="msg.id" class="q-mb-sm" style="max-width: 100% !important; overflow-wrap: break-word;">
+            <q-chat-message
+              :sent="msg.userId === authStore.currentUser?.id"
+              :name="getUserName(msg.userId)"
+              :stamp="calculateTimeAgo(msg.sentAt)"
+            >
+              <div v-html="formatMessage(msg.content)"></div>
+            </q-chat-message>
+          </div>
+
+          <template #loading>
+            <div class="row justify-center q-my-md">
+              <q-spinner-dots color="primary" size="40px" />
+            </div>
+          </template>
+        </q-infinite-scroll>
       </div>
     </q-scroll-area>
 
@@ -169,6 +186,9 @@ interface ChannelMessagesState {
   userToAdd: string;
   listeners: EventMap;
   messages: any[];
+  hasMore: boolean;
+  page: number;
+  scrollTarget: HTMLElement | null;
 }
 
 export default defineComponent({
@@ -184,10 +204,46 @@ export default defineComponent({
       userToAdd: '',
       listeners: {},
       messages: [] as any[],
-
+      hasMore: true,
+      page: 1,
+      scrollTarget: null,
     };
   },
-  methods: {
+    methods: {
+      async loadMoreMessages(index: number, done: () => void) {
+    if (!this.hasMore) {
+      done();
+      return;
+    }
+
+    const nextPage = this.page + 1;
+    const res = await getMessages(<string>this.channel?.id, nextPage);
+
+    if (!res.success || res.data.length === 0) {
+      this.hasMore = false;
+      done();
+      return;
+    }
+
+
+    const el = this.$refs.scrollArea as QScrollArea;
+    const scrollEl = el.getScrollTarget() as HTMLElement;
+
+    const newMessages = res.data.map((m: any) => ({
+      ...m,
+      sentAt: new Date(m.sentAt)
+    }));
+
+    this.messages = [...newMessages.reverse(), ...this.messages];
+    this.page = nextPage;
+
+    await this.$nextTick();
+    const oldHeight = scrollEl.scrollHeight;
+    const newHeight = scrollEl.scrollHeight;
+    scrollEl.scrollTop = newHeight - oldHeight;
+
+    done();
+  },
     formatMessage(text: string) {
       return text.replace(
         /@(\w+)/g,
@@ -198,7 +254,7 @@ export default defineComponent({
       const response = await getChannel(channelId);
        const msgs = await getMessages(channelId);
       if (msgs.success) {
-        this.messages = msgs.data.map((m: any) => ({
+        this.messages = msgs.data.reverse().map((m: any) => ({
           ...m,
           sentAt: new Date(m.sentAt)
         }))
@@ -319,6 +375,9 @@ export default defineComponent({
     this.initializeListeners();
     this.subscribe();
    
+  },
+  mounted() {
+    this.scrollTarget = this.$refs.scrollTarget as HTMLElement;
   },
   beforeUnmount() {
     this.unsubscribe();

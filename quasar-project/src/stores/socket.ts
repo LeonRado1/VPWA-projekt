@@ -64,7 +64,10 @@ export const useSocketStore = defineStore('socket', {
       this.listeners['invite:received'] = (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
       };
-
+      this.listeners['invite:accepted'] = (channel: Channel) => {
+        console.log(channel);
+        this.channelsStore.addOrUpdateChannel(channel);
+      };
       this.listeners['revoke:received'] = async (channelId: string) => {
         const currentChannelId = this.router.currentRoute.value.params.id;
         if (currentChannelId === channelId) {
