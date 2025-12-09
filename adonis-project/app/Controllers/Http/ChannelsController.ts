@@ -11,10 +11,10 @@ export default class ChannelsController {
         query.where('for_user_id', auth.user!.id);
       })
       .preload('invites', (query) => {
-        query.where('for_user_id', auth.user!.id).limit(1);
+        query.where('for_user_id', auth.user!.id);
       })
       .preload('messages', (query) => {
-        query.orderBy('sent_at', 'desc').limit(1);
+        query.orderBy('sent_at', 'desc');
       });
 
     return response.ok(channels);
@@ -25,6 +25,7 @@ export default class ChannelsController {
       .where('id', params.id)
       .preload('users', (query) => {
         query.orderBy('joined_at', 'desc');
+        query.preload('settings');
       })
       .firstOrFail();
 

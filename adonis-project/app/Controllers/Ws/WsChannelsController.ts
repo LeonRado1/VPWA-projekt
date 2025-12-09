@@ -56,9 +56,13 @@ export default class WsChannelsController {
             query.orderBy('sent_at', 'desc').limit(1);
           });
 
+          const user = await User.query().where('id', auth.user!.id).preload('settings').firstOrFail();
+
           socket.join(`channel:${channel.id}`);
 
           socket.emit('join:added', channel);
+          socket.nsp.to(`channel:${channel.id}`).emit('user:joined', channel.id, user);
+
           socket.emit('result:success', 'Channel joined successfully');
         } else {
           socket.emit('result:failed', `Channel ${channelName} already exists and is private`);
@@ -175,6 +179,8 @@ export default class WsChannelsController {
       socket.nsp.in(room).socketsLeave(`channel:${channelId}`);
       socket.nsp.in(room).emit('channel:removed', channel.id);
 
+      socket.nsp.in(`channel:${channelId}`).emit('user:removed', channelId, forUserId);
+
       socket.emit('result:success', 'User was revoked successfully');
     } catch (error) {
       if (error.code === 'E_ROW_NOT_FOUND') {
@@ -214,8 +220,10 @@ export default class WsChannelsController {
 
         const room = `user:${forUserId}`;
 
-        socket.nsp.in(room).emit('channel:removed', channelId);
         socket.nsp.in(room).socketsLeave(`channel:${channel.id}`);
+        socket.nsp.in(room).emit('channel:removed', channelId);
+
+        socket.nsp.in(`channel:${channelId}`).emit('user:removed', channelId, forUserId);
       } else {
         const banVotes = await BanVote.query().where('for_user_id', forUserId).andWhere('channel_id', channelId);
 
@@ -224,8 +232,10 @@ export default class WsChannelsController {
 
           const room = `user:${forUserId}`;
 
-          socket.nsp.in(room).emit('channel:removed', channelId);
           socket.nsp.in(room).socketsLeave(`channel:${channel.id}`);
+          socket.nsp.in(room).emit('channel:removed', channelId);
+
+          socket.nsp.in(`channel:${channelId}`).emit('user:removed', channelId, forUserId);
         }
       }
 
@@ -298,7 +308,11 @@ export default class WsChannelsController {
         await member.delete();
 
         const room = `user:${auth.user!.id}`;
-        socket.nsp.in(room).emit(`channel:removed`, channelId);
+
+        socket.nsp.in(room).socketsLeave(`channel:${channel.id}`);
+        socket.nsp.in(room).emit('channel:removed', channelId);
+
+        socket.nsp.in(`channel:${channelId}`).emit('user:removed', channelId, auth.user!.id);
       }
 
       socket.emit('result:success', 'Channel was cancelled successfully');
@@ -329,9 +343,13 @@ export default class WsChannelsController {
         query.orderBy('sent_at', 'desc').limit(1);
       });
 
+      const user = await User.query().where('id', auth.user!.id).preload('settings').firstOrFail();
+
       socket.join(`channel:${channel.id}`);
 
       socket.emit('invite:accepted', channel);
+      socket.nsp.to(`channel:${channel.id}`).emit('user:joined', channel.id, user);
+
       socket.emit('result:success', 'Invite was accepted successfully');
     } catch (error) {
       if (error.code === 'E_ROW_NOT_FOUND') {

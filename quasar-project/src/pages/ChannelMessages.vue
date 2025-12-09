@@ -3,7 +3,7 @@
     <div class="row items-center bg-secondary q-pa-sm">
       <div class="col text-subtitle text-weight-medium text-white flex items-center">
         {{ channel.name }}
-        <q-badge v-if="isAdmin" class="q-ml-xs gt-xs" outline color="warning" label="Admin" />
+        <q-badge v-if="isAdmin" class="q-ml-sm gt-xs" outline color="warning" label="Admin" />
       </div>
       <div class="col text-center">
         <q-chip v-if="channel.isPublic" icon="lock_open" :clickable="false" :ripple="false">
@@ -178,6 +178,7 @@ import { type AuthStoreType, useAuthStore } from 'stores/auth';
 import MessageField from 'components/MessageField.vue';
 import { getMessages } from 'src/services/messageService';
 import { type Message } from 'src/models/Message';
+import { type Setting, type User } from 'src/models/User';
 
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
@@ -322,9 +323,37 @@ export default defineComponent({
       };
 
       this.listeners['message:new'] = async (msg: Message) => {
-        this.messages.push(msg);
-        await nextTick();
-        this.scrollToBottom();
+        if (msg.channelId === this.channel?.id) {
+          this.messages.push(msg);
+          await nextTick();
+          this.scrollToBottom();
+        }
+      };
+
+      this.listeners['status:changed'] = (userId: number, settings: Setting) => {
+        const user = this.channel?.users?.find((x) => x.id === userId);
+
+        if (user) {
+          user.settings = settings;
+        }
+
+        this.messages.forEach((x) => {
+          if (x.user.id === userId) {
+            x.user.settings = settings;
+          }
+        });
+      };
+
+      this.listeners['user:joined'] = (channelId: string, user: User) => {
+        if (channelId === this.channel?.id && !this.channel?.users?.some((x) => x.id === user.id)) {
+          this.channel!.users?.push(user);
+        }
+      };
+
+      this.listeners['user:removed'] = (channelId: string, userId: number) => {
+        if (channelId === this.channel?.id && this.channel.users) {
+          this.channel.users = this.channel.users.filter((x) => x.id !== userId);
+        }
       };
     },
     subscribe() {

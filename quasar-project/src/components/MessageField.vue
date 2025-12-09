@@ -45,6 +45,42 @@
       :disable="disableButton"
     />
   </div>
+
+  <q-dialog v-if="channel" v-model="usersDialogOpen">
+    <q-card class="shadow-1 rounded-xl" style="min-width: min(300px, 95%)">
+      <q-card-section class="text-h6 text-secondary">Users</q-card-section>
+
+      <q-card-section>
+        <div class="q-mb-sm" v-for="user of channel.users" :key="user.id">
+          <q-avatar color="secondary" size="md" text-color="white">
+            {{ user.nickname[0] }}
+            <q-badge :color="getUserStatus(user.settings!.statusId).value" rounded floating />
+          </q-avatar>
+          <span class="q-ml-sm text-weight-medium gt-xs">{{ user.nickname }}</span>
+          <q-badge
+            v-if="user.isAdmin"
+            class="q-ml-sm gt-xs"
+            outline
+            color="warning"
+            label="Admin"
+          />
+          <q-badge
+            v-if="user.id === authStore.currentUser?.id"
+            class="q-ml-sm gt-xs"
+            outline
+            color="positive"
+            label="You"
+          />
+        </div>
+      </q-card-section>
+
+      <q-separator />
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="secondary" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script lang="ts">
@@ -52,6 +88,7 @@ import { defineComponent, type PropType } from 'vue';
 import { useSocketStore } from 'stores/socket';
 import type { Channel } from 'src/models/Channel';
 import { useAuthStore } from 'stores/auth';
+import { getUserStatus } from 'src/misc/helpers';
 
 export default defineComponent({
   props: {
@@ -67,10 +104,12 @@ export default defineComponent({
       socketStore: useSocketStore(),
       authStore: useAuthStore(),
       newMessage: '',
+      usersDialogOpen: false,
     };
   },
 
   methods: {
+    getUserStatus,
     addMessage() {
       if (this.isMessageEmpty || (this.commands.length && !this.commands[0]!.startsWith('/'))) {
         return;
@@ -109,6 +148,10 @@ export default defineComponent({
 
           case '/cancel':
             socket.emit('cancel:sent', this.channel!.id);
+            break;
+
+          case '/list':
+            this.usersDialogOpen = true;
             break;
 
           default:

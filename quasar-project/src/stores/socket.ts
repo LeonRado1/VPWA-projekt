@@ -6,6 +6,7 @@ import type { Channel } from 'src/models/Channel';
 import { useAuthStore } from 'stores/auth';
 import type { Message } from 'src/models/Message';
 import { AppVisibility } from 'quasar';
+import type { Setting } from 'src/models/User';
 
 interface EventMap {
   [event: string]: (...args: any[]) => void | Promise<void>;
@@ -92,6 +93,12 @@ export const useSocketStore = defineStore('socket', {
         }
 
         this.channelsStore.updateChannelActivity(message);
+      };
+
+      this.listeners['status:changed'] = (userId: number, settings: Setting) => {
+        if (userId === this.authStore.currentUser?.id) {
+          this.authStore.currentUser.settings = settings;
+        }
       };
     },
     subscribe() {

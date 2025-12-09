@@ -23,6 +23,7 @@
                 <div class="text-h6 q-mb-md">Status</div>
               </div>
               <q-btn-toggle
+                @update:model-value="(event) => changeUserStatus(event)"
                 :model-value="status.value"
                 :dense="$q.screen.lt.sm"
                 spread
@@ -73,6 +74,7 @@ import { defineComponent } from 'vue';
 import { useAuthStore } from 'stores/auth';
 import { getUserStatus, notify } from 'src/misc/helpers';
 import { logout } from 'src/services/authService';
+import { useSocketStore } from 'stores/socket';
 
 const options = [
   {
@@ -98,6 +100,7 @@ export default defineComponent({
       authStore: useAuthStore(),
       $q: useQuasar(),
       options,
+      socketStore: useSocketStore(),
     };
   },
   props: {
@@ -125,6 +128,10 @@ export default defineComponent({
     },
     toggleDarkMode() {
       this.$q.dark.toggle();
+    },
+    changeUserStatus(event: string) {
+      const statusId = this.options.findIndex((x) => x.value === event)! + 1;
+      this.socketStore.ws?.emit('status:new', statusId);
     },
   },
   computed: {
