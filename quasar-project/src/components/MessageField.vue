@@ -165,6 +165,15 @@ export default defineComponent({
         });
       }
     },
+
+    sendDraft() {
+      const socket = this.socketStore.ws;
+      if (!socket) return;
+      socket.emit('message:typing', {
+        channelId: this.channel!.id,
+        draft: this.newMessage.trim()
+      });
+    }
   },
 
   computed: {
@@ -252,5 +261,14 @@ export default defineComponent({
       return this.isMessageEmpty || (!this.channel && this.commands.length < 2);
     },
   },
+
+  watch: {
+      newMessage: {
+        handler() {
+          this.sendDraft();
+        },
+        immediate: false
+      }
+  }
 });
 </script>

@@ -161,7 +161,16 @@
         <q-btn outline color="negative" label="Decline" @click="rejectInvite" />
       </div>
     </div>
-
+    <div class="q-pa-sm text-grey" v-if="Object.keys(typingUsers).length">
+      <div v-for="(draft, userId) in typingUsers" :key="userId">
+        <p v-if="!displayDraft[userId]" class="q-ma-none">
+            {{ getNickname(userId) }} is typing <span @click="displayDraft[userId] = true" style="cursor: pointer;">Display</span>
+        </p>
+        <p v-if="draft !== '' && displayDraft[userId]" class="q-ma-none">
+          {{ getNickname(userId) }} is typing: <i>{{ draft }}</i> <span style="cursor: pointer;" @click="displayDraft[userId] = false">Hide</span>
+        </p>
+      </div>
+    </div>
     <MessageField :channel="channel" />
   </q-page>
 </template>
@@ -197,6 +206,9 @@ interface ChannelMessagesState {
   hasMore: boolean;
   page: number;
   initialLoad: boolean;
+  typingUsers: { [userId: number]: string };        
+  typingTimeouts: { [userId: number]: ReturnType<typeof setTimeout> };
+  displayDraft: { [userId: number]: boolean };
 }
 
 export default defineComponent({
@@ -215,6 +227,9 @@ export default defineComponent({
       hasMore: true,
       page: 1,
       initialLoad: false,
+      typingUsers: {},         
+      typingTimeouts: {}, 
+      displayDraft: {} as { [userId: number]: boolean },  
     };
   },
   methods: {
@@ -310,6 +325,12 @@ export default defineComponent({
       this.socketStore.ws?.emit('invite:sent', this.channel!.id, this.userToAdd);
       this.userToAdd = '';
     },
+    getNickname(userId: number) {
+      console.log(this.channel);
+      console.log(userId);
+      console.log(this.channel?.users?.find(u => u.id == userId));
+      return this.channel?.users?.find(u => u.id == userId)?.nickname ?? 'User';
+    },
     initializeListeners() {
       this.listeners['invite:accepted'] = async (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
@@ -328,6 +349,14 @@ export default defineComponent({
           await nextTick();
           this.scrollToBottom();
         }
+      };
+      this.listeners['user:typing'] = (data) => {
+        if (data.channelId !== this.channel?.id) return;
+        this.typingUsers[data.userId] = data.draft;
+        clearTimeout(this.typingTimeouts[data.userId]);
+        this.typingTimeouts[data.userId] = setTimeout(() => {
+          delete this.typingUsers[data.userId];
+        }, 2000);
       };
 
       this.listeners['status:changed'] = (userId: number, settings: Setting) => {
