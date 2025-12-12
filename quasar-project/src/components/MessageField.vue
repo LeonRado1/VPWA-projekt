@@ -33,6 +33,7 @@
       autogrow
       :max-height="100"
       @keydown.enter.exact.prevent="addMessage"
+      :disable="!socketStore.connected"
     />
     <q-btn
       icon="send"
@@ -42,11 +43,15 @@
       color="primary"
       class="q-ml-sm"
       @click="addMessage"
-      :disable="disableButton"
+      :disable="disableButton || !socketStore.connected"
     />
   </div>
 
-  <q-dialog v-if="channel" v-model="usersDialogOpen">
+  <q-dialog
+    v-if="channel"
+    :model-value="usersDialogOpen"
+    @update:model-value="(val) => $emit('update:usersDialogOpen', val)"
+  >
     <q-card class="shadow-1 rounded-xl" style="min-width: min(300px, 95%)">
       <q-card-section class="text-h6 text-secondary">Users</q-card-section>
 
@@ -97,14 +102,19 @@ export default defineComponent({
       required: false,
       default: null,
     },
+    usersDialogOpen: {
+      type: Boolean,
+      required: false,
+    },
   },
+
+  emits: ['update:usersDialogOpen'],
 
   data() {
     return {
       socketStore: useSocketStore(),
       authStore: useAuthStore(),
       newMessage: '',
-      usersDialogOpen: false,
     };
   },
 
@@ -151,7 +161,7 @@ export default defineComponent({
             break;
 
           case '/list':
-            this.usersDialogOpen = true;
+            this.$emit('update:usersDialogOpen', true);
             break;
 
           default:
@@ -171,9 +181,9 @@ export default defineComponent({
       if (!socket) return;
       socket.emit('message:typing', {
         channelId: this.channel!.id,
-        draft: this.newMessage.trim()
+        draft: this.newMessage.trim(),
       });
-    }
+    },
   },
 
   computed: {
@@ -263,12 +273,12 @@ export default defineComponent({
   },
 
   watch: {
-      newMessage: {
-        handler() {
-          this.sendDraft();
-        },
-        immediate: false
-      }
-  }
+    newMessage: {
+      handler() {
+        this.sendDraft();
+      },
+      immediate: false,
+    },
+  },
 });
 </script>

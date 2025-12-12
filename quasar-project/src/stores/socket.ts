@@ -29,7 +29,7 @@ export const useSocketStore = defineStore('socket', {
     authStore: useAuthStore(),
   }),
   actions: {
-    connect(token: string) {
+    connect(token: string, statusId?: number) {
       if (this.connected) {
         return;
       }
@@ -47,17 +47,38 @@ export const useSocketStore = defineStore('socket', {
       });
 
       this.initializeAlerts();
-
       this.initializeListeners();
+
       this.subscribe();
+
+      this.ws.emit('status:new', statusId ?? 1);
+    },
+    disconnect() {
+      if (!this.connected) {
+        return;
+      }
+
+      this.connected = false;
+
+      this.ws?.emit('status:new', 2);
+
+      if (this.authStore.currentUser?.settings) {
+        this.authStore.currentUser.settings.statusId = 2;
+      }
+
+      this.unsubscribe();
+
+      this.ws?.disconnect();
+      this.ws = null;
     },
     initializeAlerts() {
-      this.ws!.on('result:success', (message: string) => {
+      this.listeners['result:success'] = (message: string) => {
         notify(message, false);
-      });
-      this.ws!.on('result:failed', (message: string) => {
+      };
+
+      this.listeners['result:failed'] = (message: string) => {
         notify(message, true);
-      });
+      };
     },
     initializeListeners() {
       this.listeners['join:added'] = async (channel: Channel) => {
@@ -83,13 +104,15 @@ export const useSocketStore = defineStore('socket', {
         const user = this.authStore.currentUser;
 
         if (!AppVisibility.appVisible && !(message.userId === user?.id)) {
-          if (user?.settings?.onlyAddressed && !message.mentions.some((x) => x.userId === user?.id))
-            return;
-
-          new Notification(`New Message from: ${message.user.nickname}`, {
-            body: message.content.slice(0, 60) + (message.content.length > 60 ? '…' : ''),
-            icon: '/icons/favicon.svg',
-          });
+          if (
+            user?.settings?.statusId === 1 &&
+            (!user?.settings?.onlyAddressed || message.mentions.some((x) => x.userId === user?.id))
+          ) {
+            new Notification(`New Message from: ${message.user.nickname}`, {
+              body: message.content.slice(0, 60) + (message.content.length > 60 ? '…' : ''),
+              icon: '/icons/favicon.svg',
+            });
+          }
         }
 
         this.channelsStore.updateChannelActivity(message);

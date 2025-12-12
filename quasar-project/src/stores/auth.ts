@@ -8,6 +8,8 @@ interface AuthState {
   token: string | null;
 }
 
+let cleanup: () => void;
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     token: null,
@@ -25,6 +27,10 @@ export const useAuthStore = defineStore('auth', {
 
       const socketStore = useSocketStore();
       socketStore.connect(token);
+
+      cleanup = () => socketStore.disconnect();
+
+      window.addEventListener('beforeunload', cleanup);
     },
     async onLogin(token: string, user: User) {
       LocalStorage.setItem('auth_token', token);
@@ -35,13 +41,24 @@ export const useAuthStore = defineStore('auth', {
       const socketStore = useSocketStore();
       socketStore.connect(token);
 
+      cleanup = () => socketStore.disconnect();
+
+      window.addEventListener('beforeunload', cleanup);
+
       await this.router.push('/');
     },
     async onLogout() {
+      await this.router.push('/');
+
       LocalStorage.removeItem('auth_token');
 
       this.token = null;
       this.user = null;
+
+      const socketStore = useSocketStore();
+      socketStore.disconnect();
+
+      window.removeEventListener('beforeunload', cleanup);
 
       await this.router.push('/auth/login');
     },

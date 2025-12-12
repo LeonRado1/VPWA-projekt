@@ -45,22 +45,16 @@ export default class MessagesController {
   }
 
   public async onTyping({ socket, auth }: WsContextContract, payload) {
-
-    const member = await ChannelMember.query()
-      .where('user_id', auth.user!.id)
-      .andWhere('channel_id', payload.channelId)
-      .first();
+    const member = await ChannelMember.query().where('user_id', auth.user!.id).andWhere('channel_id', payload.channelId).first();
 
     if (!member) {
       return socket.emit('result:failed', 'User is not member of this channel');
     }
-    socket.broadcast
-      .to(`channel:${payload.channelId}`)
-      .emit('user:typing', {
-        userId: auth.user!.id,
-        draft: payload.draft || '',
-        channelId: payload.channelId,
-      });
-}
 
+    socket.broadcast.to(`channel:${payload.channelId}`).emit('user:typing', {
+      userId: auth.user!.id,
+      draft: payload.draft || '',
+      channelId: payload.channelId,
+    });
+  }
 }
