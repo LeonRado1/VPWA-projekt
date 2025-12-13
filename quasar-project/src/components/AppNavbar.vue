@@ -130,19 +130,22 @@ export default defineComponent({
       this.$q.dark.toggle();
     },
     changeUserStatus(event: string) {
-      const statusId = this.options.findIndex((x) => x.value === event)! + 1;
+      const statusId = (this.options.findIndex((x) => x.value === event)! + 1) as 1 | 2 | 3;
       const currentStatusId = this.authStore.currentUser!.settings!.statusId;
-
       if (statusId === currentStatusId) {
         return;
       }
 
       if (statusId === 2) {
         this.socketStore.disconnect();
+        this.authStore.currentUser!.settings!.statusId = statusId;
       } else if (currentStatusId === 2) {
         this.socketStore.connect(this.authStore.token!, statusId);
+        this.authStore.currentUser!.settings!.statusId = statusId;
+        
       } else {
         this.socketStore.ws?.emit('status:new', statusId);
+        this.authStore.currentUser!.settings!.statusId = statusId;
       }
     },
   },
