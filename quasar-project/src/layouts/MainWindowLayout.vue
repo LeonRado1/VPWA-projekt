@@ -27,6 +27,7 @@
             round
             size="sm"
             icon="library_add"
+            :disable="!socketStore.connected"
           />
         </div>
       </div>

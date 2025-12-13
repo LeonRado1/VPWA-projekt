@@ -15,7 +15,20 @@
       </div>
       <div class="col text-right">
         <q-btn
+          v-if="!isInvite"
+          flat
+          round
+          size="12px"
+          icon="person_search"
+          color="white"
+          aria-label="Leave channel"
+          @click="usersDialogOpen = !usersDialogOpen"
+        >
+          <q-tooltip class="gt-xs" anchor="top left">List users</q-tooltip>
+        </q-btn>
+        <q-btn
           v-if="!isAdmin && !isInvite"
+          :disable="!socketStore.connected"
           flat
           round
           size="12px"
@@ -28,6 +41,7 @@
         </q-btn>
         <q-btn
           v-if="isAdmin"
+          :disable="!socketStore.connected"
           flat
           round
           size="12px"
@@ -157,12 +171,56 @@
       </div>
       <div class="text-subtitle">Accept or decline the invite bellow.</div>
       <div class="flex q-mt-md">
-        <q-btn outline color="positive" label="Accept" class="q-mr-sm" @click="acceptInvite" />
-        <q-btn outline color="negative" label="Decline" @click="rejectInvite" />
+        <q-btn
+          :disable="!socketStore.connected"
+          outline
+          color="positive"
+          label="Accept"
+          class="q-mr-sm"
+          @click="acceptInvite"
+        />
+        <q-btn
+          :disable="!socketStore.connected"
+          outline
+          color="negative"
+          label="Decline"
+          @click="rejectInvite"
+        />
       </div>
     </div>
-
-    <MessageField :channel="channel" />
+    <div class="q-pa-sm" v-if="Object.keys(typingUsers).length">
+      <div v-for="(draft, userId) in typingUsers" :key="userId">
+        <p v-if="!displayDraft[userId]" class="q-ma-none flex bi-align-center q-gutter-x-xs">
+          <span class="text-weight-bold">{{ getNickname(userId) }}</span>
+          <span class="text-secondary">is typing:</span>
+          <q-btn
+            @click="displayDraft[userId] = true"
+            round
+            unelevated
+            color="dark"
+            size="xs"
+            icon="visibility"
+          />
+        </p>
+        <p
+          v-if="draft !== '' && displayDraft[userId]"
+          class="q-ma-none flex bi-align-center q-gutter-x-xs"
+        >
+          <span class="text-weight-bold">{{ getNickname(userId) }}</span>
+          <span class="text-secondary">is typing:</span>
+          <q-btn
+            @click="displayDraft[userId] = false"
+            round
+            unelevated
+            color="dark"
+            size="xs"
+            icon="visibility_off"
+          />
+          <span class="text-secondary">{{ draft }}</span>
+        </p>
+      </div>
+    </div>
+    <MessageField v-model:usersDialogOpen="usersDialogOpen" :channel="channel" />
   </q-page>
 </template>
 
@@ -197,6 +255,10 @@ interface ChannelMessagesState {
   hasMore: boolean;
   page: number;
   initialLoad: boolean;
+  typingUsers: { [userId: number]: string };
+  typingTimeouts: { [userId: number]: ReturnType<typeof setTimeout> };
+  displayDraft: { [userId: number]: boolean };
+  usersDialogOpen: boolean;
 }
 
 export default defineComponent({
@@ -215,6 +277,10 @@ export default defineComponent({
       hasMore: true,
       page: 1,
       initialLoad: false,
+      typingUsers: {},
+      typingTimeouts: {},
+      displayDraft: {},
+      usersDialogOpen: false,
     };
   },
   methods: {
@@ -310,6 +376,9 @@ export default defineComponent({
       this.socketStore.ws?.emit('invite:sent', this.channel!.id, this.userToAdd);
       this.userToAdd = '';
     },
+    getNickname(userId: number) {
+      return this.channel?.users?.find((u) => u.id == userId)?.nickname ?? 'User';
+    },
     initializeListeners() {
       this.listeners['invite:accepted'] = async (channel: Channel) => {
         this.channelsStore.addOrUpdateChannel(channel);
@@ -328,6 +397,15 @@ export default defineComponent({
           await nextTick();
           this.scrollToBottom();
         }
+      };
+
+      this.listeners['user:typing'] = (data) => {
+        if (data.channelId !== this.channel?.id) return;
+        this.typingUsers[data.userId] = data.draft;
+        clearTimeout(this.typingTimeouts[data.userId]);
+        this.typingTimeouts[data.userId] = setTimeout(() => {
+          delete this.typingUsers[data.userId];
+        }, 2000);
       };
 
       this.listeners['status:changed'] = (userId: number, settings: Setting) => {
@@ -378,20 +456,42 @@ export default defineComponent({
     tokenizeMessage(message: Message) {
       return tokenizeMessage(message);
     },
+    resetVariables() {
+      this.channel = null;
+      this.messages = [];
+      this.hasMore = true;
+      this.page = 1;
+
+      this.initialLoad = false;
+
+      this.typingUsers = {};
+      this.typingTimeouts = {};
+      this.displayDraft = {};
+    },
   },
   watch: {
     '$route.params.id': {
       async handler(newId) {
-        this.channel = null;
-        this.messages = [];
-        this.hasMore = true;
-        this.page = 1;
-
-        this.initialLoad = false;
+        this.resetVariables();
 
         await this.loadChannel(newId);
       },
-      immediate: true,
+      immediate: false,
+    },
+    'socketStore.connected': {
+      async handler(newVal, oldVal) {
+        if (newVal && !oldVal) {
+          this.resetVariables();
+
+          const id = this.$route.params.id as string;
+          await this.loadChannel(id);
+
+          this.subscribe();
+        } else if (!newVal && oldVal) {
+          this.unsubscribe();
+        }
+      },
+      immediate: false,
     },
     adminOptionsDialogOpen(newValue) {
       if (!newValue) {
@@ -412,7 +512,10 @@ export default defineComponent({
     await this.loadChannel(id);
 
     this.initializeListeners();
-    this.subscribe();
+
+    if (this.socketStore.connected) {
+      this.subscribe();
+    }
   },
   beforeUnmount() {
     this.unsubscribe();

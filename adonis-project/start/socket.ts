@@ -22,4 +22,5 @@ Ws.namespace('/ws')
   .on('invite:reject', 'WsChannelsController.onInviteReject')
   .on('message:join', 'MessagesController.onJoin')
   .on('message:send', 'MessagesController.onSend')
-  .on('status:new', 'WsSettingsController.onStatusChange');
+  .on('status:new', 'WsSettingsController.onStatusChange')
+  .on('message:typing', 'MessagesController.onTyping');

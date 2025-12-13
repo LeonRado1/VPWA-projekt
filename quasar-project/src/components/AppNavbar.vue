@@ -131,7 +131,19 @@ export default defineComponent({
     },
     changeUserStatus(event: string) {
       const statusId = this.options.findIndex((x) => x.value === event)! + 1;
-      this.socketStore.ws?.emit('status:new', statusId);
+      const currentStatusId = this.authStore.currentUser!.settings!.statusId;
+
+      if (statusId === currentStatusId) {
+        return;
+      }
+
+      if (statusId === 2) {
+        this.socketStore.disconnect();
+      } else if (currentStatusId === 2) {
+        this.socketStore.connect(this.authStore.token!, statusId);
+      } else {
+        this.socketStore.ws?.emit('status:new', statusId);
+      }
     },
   },
   computed: {

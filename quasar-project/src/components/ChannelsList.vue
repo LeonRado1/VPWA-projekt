@@ -32,11 +32,13 @@ import { calculateTimeAgo, notify } from 'src/misc/helpers';
 import { type Channel } from 'src/models/Channel';
 import { useChannelsStore } from 'stores/channels';
 import { getChannels } from 'src/services/channelService';
+import { useSocketStore } from 'stores/socket';
 
 export default defineComponent({
   data() {
     return {
       channelsStore: useChannelsStore(),
+      socketStore: useSocketStore(),
     };
   },
   methods: {
@@ -63,6 +65,15 @@ export default defineComponent({
     calculateTimeAgo(date?: string) {
       return calculateTimeAgo(new Date(date ?? 0));
     },
+    async loadChannels() {
+      const response = await getChannels();
+
+      if (response.success) {
+        this.channelsStore.setChannels(response.data!);
+      } else {
+        notify(response.message!, true);
+      }
+    },
   },
   computed: {
     channelsSorted(): Channel[] {
@@ -81,14 +92,18 @@ export default defineComponent({
       });
     },
   },
+  watch: {
+    'socketStore.connected': {
+      async handler(newVal, oldVal) {
+        if (newVal && !oldVal) {
+          await this.loadChannels();
+        }
+      },
+      immediate: false,
+    },
+  },
   async created() {
-    const response = await getChannels();
-
-    if (response.success) {
-      this.channelsStore.setChannels(response.data!);
-    } else {
-      notify(response.message!, true);
-    }
+    await this.loadChannels();
   },
 });
 </script>
