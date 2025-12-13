@@ -132,7 +132,7 @@ export default defineComponent({
     changeUserStatus(event: string) {
       const statusId = this.options.findIndex((x) => x.value === event)! + 1;
       const currentStatusId = this.authStore.currentUser!.settings!.statusId;
-
+      console.log({ statusId, currentStatusId });
       if (statusId === currentStatusId) {
         return;
       }

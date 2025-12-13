@@ -3,7 +3,7 @@ import Message from 'App/Models/Message';
 import Mention from 'App/Models/Mention';
 import User from 'App/Models/User';
 import ChannelMember from 'App/Models/ChannelMember';
-
+import MessageDraft from 'App/Models/MessageDraft';
 export default class MessagesController {
   public async onJoin({ socket }: WsContextContract, channelId: string) {
     socket.join(`channel:${channelId}`);
@@ -50,7 +50,14 @@ export default class MessagesController {
     if (!member) {
       return socket.emit('result:failed', 'User is not member of this channel');
     }
+    await MessageDraft.create(
+      {
+        userId: auth.user!.id,
+        channelId: payload.channelId,
+        content: payload.draft || '', 
 
+      }
+    );
     socket.broadcast.to(`channel:${payload.channelId}`).emit('user:typing', {
       userId: auth.user!.id,
       draft: payload.draft || '',
